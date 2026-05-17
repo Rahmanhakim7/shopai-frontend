@@ -19,6 +19,8 @@ export function useAuth() {
           message: data.detail || "Login gagal",
         };
       }
+      localStorage.setItem("token", data.access);
+      localStorage.setItem("refreshToken", data.refresh);
       return {
         success: true,
         data,

@@ -21,7 +21,7 @@ export default function LoginForm() {
     }
     setError("");
     const response = await login(username, password);
-    console.log("response", response.data);
+    console.log("response", response);
     if (response.success) {
       if (response.data.user.role === "admin") {
         router.push("/admin/dashboard");

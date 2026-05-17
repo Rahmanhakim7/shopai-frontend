@@ -1,4 +1,5 @@
 import React from "react";
+
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading?: boolean;
   variant?: "primary" | "secondary" | "danger" | "success";
@@ -13,7 +14,7 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const baseStyle =
-    "rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center";
+    "rounded-xl font-semibold cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center";
   const variants = {
     primary: "bg-purple-600 hover:bg-purple-700 text-white",
     secondary: "bg-zinc-200 hover:bg-zinc-300 text-zinc-800",
