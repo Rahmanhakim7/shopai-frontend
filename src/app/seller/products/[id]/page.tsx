@@ -89,7 +89,7 @@ export default function SellerProductDetailPage() {
             </p>
           </div>
           <Link
-            href={`/seller/products/edit/${product.id}`}>
+            href={`/seller/products/${product.id}/edit/`}>
             <Button variant="primary">
               Edit Product
             </Button>
@@ -158,7 +158,7 @@ export default function SellerProductDetailPage() {
             </div>
             <div className="flex gap-3 pt-4">
               <Link
-                href={`/seller/products/edit/${product.id}`}>
+                href={`/seller/products/${product.id}/edit/`}>
                 <Button variant="primary">
                   Edit
                 </Button>

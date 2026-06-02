@@ -1,0 +1,8 @@
+export type ProductItem = {
+  id: number;
+  name: string;
+  price: number;
+  stock: number;
+  status: string;
+  image: string;
+};

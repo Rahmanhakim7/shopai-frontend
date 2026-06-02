@@ -8,7 +8,7 @@ export default function ProfileDropdown() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const handleLogout = () => {
-    localStorage.removeItem("access");
+    localStorage.removeItem("token");
     localStorage.removeItem("refresh");
     router.push("/login");
   };

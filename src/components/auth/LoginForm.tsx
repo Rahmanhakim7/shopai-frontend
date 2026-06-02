@@ -1,64 +1,59 @@
 "use client";
+
 import Image from "next/image";
 import { useState } from "react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "next/navigation";
+import { loginApi } from "@/features/auth/auth.api";
+
 export default function LoginForm() {
-  const { login, loading } = useAuth();
+  const { login } = useAuth();
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!username || !password) {
       setError("Username dan Password wajib diisi");
       return;
     }
     setError("");
-    const response = await login(username, password);
-    console.log("response", response);
-    if (response.success) {
-      if (response.data.user.role === "admin") {
-        router.push("/admin/dashboard");
-      } else if (response.data.user.role === "seller") {
-        router.push("/seller/dashboard");
-      } else {
-        router.push("/dashboard");
-      }
-    } else {
-      setError(response.message || "Login gagal");
+    try {
+      const response = await loginApi({
+        username,
+        password,
+      });
+
+      login(
+        response.access,
+        response.refresh
+      );
+
+      router.push("/");
+    } catch (error) {
+      setError("Login gagal");
     }
   };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-white to-emerald-100 px-4 py-8">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-100 via-white to-emerald-100 px-4 py-8">
       <form
         onSubmit={handleSubmit}
-        className="
-          w-full
-          max-w-md
-          bg-white/80
-          backdrop-blur-md
-          border border-white/30
-          shadow-2xl
-          rounded-3xl
-          p-6 sm:p-8
-          space-y-4
-        ">
+        className="w-full max-w-md space-y-4 rounded-3xl border border-white/30 bg-white/80 p-6 shadow-2xl backdrop-blur-md sm:p-8"
+      >
         <div className="flex flex-col items-center space-y-4">
-           <div className="w-40">
+          <div className="w-40">
             <Image
               src="/log.png"
               alt="ShopAI Logo"
               width={1000}
               height={1000}
-              priority  
+              priority
             />
-           </div>
+          </div>
           <div className="text-center">
             <h1 className="text-3xl font-bold text-green-600">
               Selamat Datang
@@ -66,7 +61,7 @@ export default function LoginForm() {
           </div>
         </div>
         {error && (
-          <div className="bg-red-100 border border-red-300 text-red-600 text-sm rounded-xl px-4 py-3">
+          <div className="rounded-xl border border-red-300 bg-red-100 px-4 py-3 text-sm text-red-600">
             {error}
           </div>
         )}
@@ -77,7 +72,8 @@ export default function LoginForm() {
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setUsername(e.target.value)
           }
-          error={!username && error ? "Username wajib diisi" : ""}/>
+          error={!username && error ? "Username wajib diisi" : ""}
+        />
         <Input
           label="Password"
           type="password"
@@ -86,24 +82,30 @@ export default function LoginForm() {
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setPassword(e.target.value)
           }
-          error={!password && error ? "Password wajib diisi" : ""}/>
+          error={!password && error ? "Password wajib diisi" : ""}
+        />
+
         <div className="flex justify-end">
           <button
             type="button"
-            className="text-sm text-green-600 hover:text-green-700 transition">
+            className="text-sm text-green-600 transition hover:text-green-700"
+          >
             Lupa password?
           </button>
         </div>
+
         <Button
           type="submit"
-          loading={loading}
+          loading={false}
           variant="success"
-          className="w-full">
+          className="w-full"
+        >
           Login
         </Button>
+
         <p className="text-center text-sm text-zinc-500">
           Belum punya akun?{" "}
-          <span className="text-green-600 font-medium cursor-pointer hover:underline">
+          <span className="cursor-pointer font-medium text-green-600 hover:underline">
             Register
           </span>
         </p>

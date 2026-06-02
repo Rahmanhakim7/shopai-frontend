@@ -15,8 +15,7 @@ export default function SellerLayout({
     <BaseDashboardLayout
       title={title}
       sidebarTitle="Seller Panel"
-      menus={sellerMenus}
-    >
+      menus={sellerMenus}>
       {children}
     </BaseDashboardLayout>
   );
