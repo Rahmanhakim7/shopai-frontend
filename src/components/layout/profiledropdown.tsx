@@ -1,54 +1,179 @@
 "use client";
 
-import { useState } from "react";
-import Button from "@/components/ui/Button";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  ChevronDown,
+  User,
+  Settings,
+  LogOut,
+} from "lucide-react";
+
+import { getProfile } from "@/features/auth/profile";
+import { UserProfile } from "@/types/auth";
 
 export default function ProfileDropdown() {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
+
   const router = useRouter();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await getProfile();
+        setUser(response.data);
+      } catch (error) {
+        console.error("Gagal mengambil profile:", error);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+    };
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("refresh");
+
     router.push("/login");
   };
+
   return (
-    <div className="relative">
-      <Button
+    <div className="relative" ref={dropdownRef}>
+      <button
         onClick={() => setOpen(!open)}
-        variant="success"
-        size="sm"
-        className="w-10 h-10 rounded-full p-0"
+        className="
+          flex items-center gap-3
+          rounded-xl
+          border border-zinc-200
+          bg-white
+          px-3 py-2
+          transition-all duration-200
+          hover:border-green-500
+          hover:bg-green-50
+        "
       >
-        S
-      </Button>
-      {open && (
-        <div className="absolute right-0 mt-3 w-56 bg-white border border-zinc-200 rounded-2xl shadow-xl p-2 z-50">
-          <div className="px-3 py-2 border-b border-zinc-100">
-            <h3 className="font-semibold text-zinc-800">
-              Seller Account
-            </h3>
-            <p className="text-sm text-zinc-500">
-              seller@gmail.com
-            </p>
+        <div className="relative">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-600 text-sm font-bold text-white">
+            {user?.username?.charAt(0).toUpperCase() || "U"}
           </div>
-          <div className="flex flex-col gap-1 mt-2">
-            <Button
-              variant="secondary"
-              className="w-full justify-start"
+
+          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500"></span>
+        </div>
+        <div className="hidden text-left md:block">
+          <p className="text-sm font-semibold leading-none text-zinc-800">
+            {user?.username || "Loading..."}
+          </p>
+
+          <p className="mt-1 text-xs capitalize text-zinc-500">
+            {user?.role || "User"}
+          </p>
+        </div>
+
+        {/* Arrow */}
+        <ChevronDown
+          size={16}
+          className={`text-zinc-400 transition-transform duration-200 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {/* Dropdown */}
+      {open && (
+        <div className="absolute right-0 z-50 mt-3 w-72 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-green-600 to-emerald-500 p-5 text-white">
+            <div className="flex items-center gap-3">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-lg font-bold text-green-600">
+                {user?.username?.charAt(0).toUpperCase() || "U"}
+              </div>
+
+              <div>
+                <h3 className="font-semibold">
+                  {user?.username || "Loading..."}
+                </h3>
+
+                <p className="text-sm text-green-100">
+                  {user?.email || "Loading..."}
+                </p>
+
+                <span className="mt-1 inline-block rounded-full bg-white/20 px-2 py-1 text-xs capitalize">
+                  {user?.role || "User"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Menu */}
+          <div className="p-2">
+            <button
+              onClick={() => {
+                setOpen(false);
+                router.push("/profile");
+              }}
+              className="
+                flex w-full items-center gap-3
+                rounded-xl px-4 py-3
+                text-sm font-medium text-zinc-700
+                transition hover:bg-zinc-100
+              "
             >
+              <User size={18} />
               Profile
-            </Button>
-            <Button
-              variant="secondary"
-              className="w-full justify-start">
+            </button>
+
+            <button
+              onClick={() => {
+                setOpen(false);
+                router.push("/settings");
+              }}
+              className="
+                flex w-full items-center gap-3
+                rounded-xl px-4 py-3
+                text-sm font-medium text-zinc-700
+                transition hover:bg-zinc-100
+              "
+            >
+              <Settings size={18} />
               Settings
-            </Button>
-            <Button
-              variant="danger"
-              className="w-full justify-start" onClick={handleLogout}>
+            </button>
+
+            <div className="my-2 border-t border-zinc-100" />
+
+            <button
+              onClick={handleLogout}
+              className="
+                flex w-full items-center gap-3
+                rounded-xl px-4 py-3
+                text-sm font-medium text-red-600
+                transition hover:bg-red-50
+              "
+            >
+              <LogOut size={18} />
               Logout
-            </Button>
+            </button>
           </div>
         </div>
       )}

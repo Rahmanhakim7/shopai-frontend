@@ -1,10 +1,10 @@
 import React from "react";
 
-type InputProps =
-  React.InputHTMLAttributes<HTMLInputElement> & {
-    label?: string;
-    error?: string;
-    containerClassName?: string;
+type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
+  label?: string;
+  error?: string;
+  containerClassName?: string;
+  variant?: "default" | "checkbox" | "radio";
 };
 
 export default function Input({
@@ -12,43 +12,29 @@ export default function Input({
   error,
   className = "",
   containerClassName = "",
+  variant = "default",
   ...props
 }: InputProps) {
+  const isCheckbox = variant === "checkbox";
+  const isRadio = variant === "radio";
+
   return (
     <div className={containerClassName}>
-
-      {label && (
-        <label className="font-bold text-zinc-600">
-          {label}
-        </label>
+      {label && !isCheckbox && (
+        <label className="font-bold text-zinc-600">{label}</label>
       )}
 
+      {/* INPUT */}
       <input
         {...props}
-        className={`
-          w-full
-          mt-1
-          px-4
-          py-3
-          border
-          rounded-xl
-          outline-none
-          transition
-          focus:ring-2
-          focus:ring-green-400
-          ${
-            error
-              ? "border-red-500 focus:ring-red-400"
-              : "border-zinc-300"
-          }
-          ${className}
-        `}
+        className={`transition ${
+          isCheckbox || isRadio
+            ? "m-0 h-4 w-4 shrink-0 cursor-pointer p-0 align-middle accent-green-500"
+            : `mt-1 w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-green-400 ${error ? "border-red-500 focus:ring-red-400" : "border-zinc-300"} `
+        } ${className} `}
       />
-
-      {error && (
-        <p className="text-xs text-red-500 mt-1">
-          {error}
-        </p>
+      {error && !isCheckbox && (
+        <p className="mt-1 text-xs text-red-500">{error}</p>
       )}
     </div>
   );

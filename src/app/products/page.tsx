@@ -1,25 +1,22 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import BuyerLayout from "@/layouts/buyerlayouts";
 import { Loader2, Grid3X3, List } from "lucide-react";
-import Image from "next/image";
 import SearchInput from "@/components/ui/SearchInput";
 import Pagination from "@/components/ui/Pagination";
 import { useSearchParams } from "next/navigation";
 import SortDropdown from "@/components/ui/SortDropdown";
+import ProductCardList from "@/components/product/ProductCardList";
+import ProductCardGrid from "@/components/product/ProductCardGrid";
+import Input from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
+import type { ProductItem } from "@/types/product";
 
-type ProductItem = {
+type WishlistItem = {
   id: number;
-  name: string;
-  price: number;
-  stock: number;
-  status: string;
-  image: string;
+  product_id: number;
 };
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ShopPage() {
   const [products, setProducts] = useState<ProductItem[]>([]);
@@ -27,36 +24,65 @@ export default function ShopPage() {
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
+  const [inStock, setInStock] = useState(false);
+  const [outOfStock, setOutOfStock] = useState(false);
+  const [condition, setCondition] = useState<"new" | "used" | "">("");
   const [totalCount, setTotalCount] = useState(0);
-  const router = useRouter();
   const [ordering, setOrdering] = useState("latest");
   const isEmpty = !loading && products.length === 0;
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-
   const totalPages = Math.ceil(totalCount / 2);
+  const [wishlistSet, setWishlistSet] = useState<Set<number>>(new Set());
+
   const fetchProducts = async () => {
     try {
-      const response = await api.get(
-        `/products?page=${page}&search=${search}&ordering=${ordering}`,
-      );
+      setLoading(true);
+      const params = new URLSearchParams({
+        page: String(page),
+        search,
+        ordering,
+      });
+
+      const stockFilter = getStockFilter();
+      if (stockFilter) params.set("stock_filter", stockFilter);
+      if (condition) params.set("condition", condition);
+      const response = await api.get(`/products?${params.toString()}`);
       setProducts(response.data.data.results);
       setTotalCount(response.data.data.count);
-    } catch (error) {
-      console.error("Error fetching products:", error);
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchWishlist = async () => {
+    try {
+      const res = await api.get("/wishlist/");
+      const ids = res.data.map((item: WishlistItem) => item.product_id);
+      setWishlistSet(new Set(ids));
+    } catch (err) {
+      console.error("Failed fetch wishlist", err);
+    }
+  };
+  const getStockFilter = () => {
+    if (inStock) return "in_stock";
+    if (outOfStock) return "out_of_stock";
+    return "";
+  };
+
   useEffect(() => {
     const timeout = setTimeout(() => {
-      router.replace(
-        `/products?page=${page}&search=${search}&ordering=${ordering}`,
-      );
       fetchProducts();
-    }, 500);
+      fetchWishlist();
+    }, 300);
+
     return () => clearTimeout(timeout);
-  }, [page, search, ordering]);
+  }, [page, search, ordering, inStock, outOfStock, condition]);
+
+  const refreshWishlist = async () => {
+    await fetchWishlist();
+  };
 
   const sortOptions = [
     {
@@ -80,6 +106,31 @@ export default function ShopPage() {
       value: "name_desc",
     },
   ];
+
+  const handleInStock = () => {
+    setInStock((prev) => {
+      const next = !prev;
+      if (next) setOutOfStock(false);
+      return next;
+    });
+  };
+
+  const handleOutOfStock = () => {
+    setOutOfStock((prev) => {
+      const next = !prev;
+      if (next) setInStock(false);
+      return next;
+    });
+  };
+
+  const handleResetFilter = () => {
+    setInStock(false);
+    setOutOfStock(false);
+    setCondition("");
+    setOrdering("latest");
+    setSearch("");
+    setPage(1);
+  };
 
   return (
     <BuyerLayout>
@@ -134,59 +185,68 @@ export default function ShopPage() {
                   Filter Produk
                 </h2>
                 <p className="mt-1 text-xs text-gray-500">
-                  Saring produk sesuai kebutuhanmu
+                  Filter produk sesuai kebutuhanmu
                 </p>
-              </div>
-              <div className="space-y-3 border-t pt-4">
-                <h3 className="text-sm font-semibold text-gray-800">Harga</h3>
-                <input type="range" className="w-full accent-green-500" />
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>Rp 0</span>
-                  <span>Rp 10.000+</span>
-                </div>
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {["< 10k", "10k-50k", "50k-100k", "> 100k"].map((item) => (
-                    <button
-                      key={item}
-                      className="rounded-full border px-3 py-1 text-xs text-gray-600 hover:bg-gray-100"
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
               </div>
               <div className="space-y-3 border-t pt-4">
                 <h3 className="text-sm font-semibold text-gray-800">
                   Ketersediaan
                 </h3>
 
-                <label className="flex items-center gap-2 text-sm text-gray-600">
-                  <input type="checkbox" className="accent-green-500" />
-                  Stok tersedia
-                </label>
+                <div className="flex items-center gap-2 leading-none">
+                  <Input
+                    type="checkbox"
+                    variant="checkbox"
+                    checked={inStock}
+                    onChange={handleInStock}
+                  />
+                  <span className="text-sm text-gray-600">Stok Tersedia</span>
+                </div>
 
-                <label className="flex items-center gap-2 text-sm text-gray-600">
-                  <input type="checkbox" className="accent-green-500" />
-                  Habis
-                </label>
+                <div className="flex items-center gap-2 leading-none">
+                  <Input
+                    type="checkbox"
+                    variant="checkbox"
+                    checked={outOfStock}
+                    onChange={handleOutOfStock}
+                  />
+                  <span className="text-sm text-gray-600">Stok Habis</span>
+                </div>
               </div>
               <div className="space-y-3 border-t pt-4">
                 <h3 className="text-sm font-semibold text-gray-800">Kondisi</h3>
-
-                <label className="flex items-center gap-2 text-sm text-gray-600">
-                  <input type="checkbox" className="accent-green-500" />
-                  Baru
-                </label>
-
-                <label className="flex items-center gap-2 text-sm text-gray-600">
-                  <input type="checkbox" className="accent-green-500" />
-                  Bekas
-                </label>
+                <div className="flex items-center gap-2 leading-none">
+                  <Input
+                    type="radio"
+                    variant="radio"
+                    checked={condition === "new"}
+                    onChange={() =>
+                      setCondition((prev) => (prev === "new" ? "" : "new"))
+                    }
+                  />
+                  <span className="text-sm text-gray-600">Baru</span>
+                </div>
+                <div className="flex items-center gap-2 leading-none">
+                  <Input
+                    type="radio"
+                    variant="radio"
+                    checked={condition === "used"}
+                    onChange={() =>
+                      setCondition((prev) => (prev === "used" ? "" : "used"))
+                    }
+                  />
+                  <span className="text-sm text-gray-600">Bekas</span>
+                </div>
               </div>
               <div className="border-t pt-4">
-                <button className="w-full rounded-xl bg-green-600 py-2 text-sm font-medium text-white transition hover:bg-green-700">
+                <Button
+                  variant="success"
+                  size="sm"
+                  className="w-full"
+                  onClick={handleResetFilter}
+                >
                   Reset Filter
-                </button>
+                </Button>
               </div>
             </aside>
             <main className="flex-1">
@@ -247,82 +307,20 @@ export default function ShopPage() {
                   }
                 >
                   {products.map((product) => {
-                    const imageUrl = product.image
-                      ? product.image.startsWith("http")
-                        ? product.image
-                        : `${API_URL}${product.image}`
-                      : null;
-                    return (
-                      <div
+                    return viewMode === "grid" ? (
+                      <ProductCardGrid
                         key={product.id}
-                        onClick={() => router.push(`/products/${product.id}`)}
-                        className={`group cursor-pointer overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-black/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:ring-green-500 ${
-                          viewMode === "grid"
-                            ? "p-3"
-                            : "flex items-center gap-5 p-4"
-                        }`}
-                      >
-                        <div
-                          className={`relative overflow-hidden rounded-2xl bg-gray-100 ${
-                            viewMode === "grid"
-                              ? "h-44"
-                              : "h-24 w-24 flex-shrink-0"
-                          }`}
-                        >
-                          {imageUrl ? (
-                            <Image
-                              src={imageUrl}
-                              alt={product.name}
-                              fill
-                              unoptimized
-                              className="object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="flex h-full items-center justify-center text-xs text-gray-400">
-                              No Image
-                            </div>
-                          )}
-                        </div>
-                        <div
-                          className={
-                            viewMode === "grid" ? "p-2 pt-4" : "flex-1"
-                          }
-                        >
-                          <h2 className="text-base font-semibold text-gray-800">
-                            {product.name}
-                          </h2>
-                          <p className="mt-2 text-xl font-bold text-green-600">
-                            Rp {product.price.toLocaleString()}
-                          </p>
-                          <div className="mt-2 flex items-center gap-2">
-                            <span className="text-sm text-gray-500">
-                              Stock: {product.stock}
-                            </span>
-                          </div>
-                        </div>
-                        {viewMode === "list" && (
-                          <div className="flex flex-col gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                router.push(`/products/${product.id}`);
-                              }}
-                              className="cursor-pointer rounded-xl border px-4 py-2 text-sm"
-                            >
-                              Detail
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                console.log("Tambah keranjang");
-                              }}
-                              className="cursor-pointer rounded-xl bg-green-600 px-4 py-2 text-sm text-white"
-                            >
-                              Keranjang
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                        product={product}
+                        wishlistSet={wishlistSet}
+                        refreshWishlist={refreshWishlist}
+                      />
+                    ) : (
+                      <ProductCardList
+                        key={product.id}
+                        product={product}
+                        wishlistSet={wishlistSet}
+                        refreshWishlist={refreshWishlist}
+                      />
                     );
                   })}
                 </div>

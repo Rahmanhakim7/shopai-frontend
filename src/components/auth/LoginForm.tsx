@@ -11,30 +11,39 @@ import { loginApi } from "@/features/auth/auth.api";
 export default function LoginForm() {
   const { login } = useAuth();
   const router = useRouter();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!username || !password) {
       setError("Username dan Password wajib diisi");
       return;
     }
+
     setError("");
+
     try {
       const response = await loginApi({
         username,
         password,
       });
 
-      login(
-        response.access,
-        response.refresh
-      );
+      login(response.access, response.refresh, response.user);
 
-      router.push("/");
+      if (response.user.role === "buyer") {
+        router.push("/");
+      } else if (response.user.role === "seller") {
+        router.push("/seller/dashboard");
+      } else {
+        router.push("/admin");
+      }
     } catch (error) {
       setError("Login gagal");
+      console.error(error);
     }
   };
 
@@ -54,17 +63,20 @@ export default function LoginForm() {
               priority
             />
           </div>
+
           <div className="text-center">
             <h1 className="text-3xl font-bold text-green-600">
               Selamat Datang
             </h1>
           </div>
         </div>
+
         {error && (
           <div className="rounded-xl border border-red-300 bg-red-100 px-4 py-3 text-sm text-red-600">
             {error}
           </div>
         )}
+
         <Input
           label="Username"
           placeholder="Masukkan username"
@@ -74,6 +86,7 @@ export default function LoginForm() {
           }
           error={!username && error ? "Username wajib diisi" : ""}
         />
+
         <Input
           label="Password"
           type="password"

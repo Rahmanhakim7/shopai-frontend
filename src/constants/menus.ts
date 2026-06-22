@@ -1,20 +1,32 @@
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  Package,
+  Receipt,
+  User,
+} from "lucide-react";
+
 export const sellerMenus = [
   {
     name: "Dashboard",
     href: "/seller/dashboard",
+    icon: LayoutDashboard,
   },
   {
     name: "Products",
     href: "/seller/products",
+    icon: ShoppingBag,
   },
   {
     name: "orders",
     href: "/seller/orders",
+    icon: Package,
   },
   {
     name: "transactions",
     href: "/seller/transactions",
-  }
+    icon: Receipt,
+  },
 ];
 
 export const adminMenus = [
@@ -29,7 +41,7 @@ export const adminMenus = [
   {
     name: "categories",
     href: "/admin/categories",
-  }
+  },
 ];
 
 export const buyerMenus = [

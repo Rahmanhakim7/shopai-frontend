@@ -5,4 +5,7 @@ export type ProductItem = {
   stock: number;
   status: string;
   image: string;
+  seller_name: string;
+  condition: string;
 };
+  

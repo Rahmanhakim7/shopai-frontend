@@ -2,7 +2,7 @@ import React from "react";
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading?: boolean;
-  variant?: "primary" | "secondary" | "danger" | "success";
+  variant?: "primary" | "secondary" | "danger" | "success" | "ghost";
   size?: "sm" | "md" | "lg";
 };
 export default function Button({
@@ -20,6 +20,7 @@ export default function Button({
     secondary: "bg-zinc-200 hover:bg-zinc-300 text-zinc-800",
     danger: "bg-red-600 hover:bg-red-700 text-white",
     success: "bg-green-600 hover:bg-green-700 text-white",
+    ghost: "bg-transparent hover:bg-gray-100 text-gray-700",
   };
   const sizes = {
     sm: "py-2 px-3 text-sm",

@@ -14,7 +14,7 @@ export default function Pagination({
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="rounded-2xl bg-white px-4 py-2 text-sm text-gray-600 shadow-sm ring-1 ring-black/5 transition hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+        className="cursor-pointer rounded-2xl bg-white px-4 py-2 text-sm text-gray-600 shadow-sm ring-1 ring-green-100 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
       >
         Previous
       </button>
@@ -22,11 +22,11 @@ export default function Pagination({
         <button
           key={page}
           onClick={() => onPageChange(page)}
-          className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${
+          className={`rounded-2xl px-4 py-2 text-sm font-medium transition-all duration-200 ${
             currentPage === page
-              ? "bg-green-500 text-white shadow-sm"
-              : `bg-white text-gray-600 shadow-sm ring-1 ring-black/5 hover:shadow-md`
-          } `}
+              ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-md"
+              : "bg-white text-gray-600 shadow-sm ring-1 ring-green-100 hover:-translate-y-0.5 hover:shadow-md"
+          }`}
         >
           {page}
         </button>
@@ -34,7 +34,7 @@ export default function Pagination({
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="rounded-2xl bg-white px-4 py-2 text-sm text-gray-600 shadow-sm ring-1 ring-black/5 transition hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
+        className="cursor-pointer rounded-2xl bg-white px-4 py-2 text-sm text-gray-600 shadow-sm ring-1 ring-green-100 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50"
       >
         Next
       </button>

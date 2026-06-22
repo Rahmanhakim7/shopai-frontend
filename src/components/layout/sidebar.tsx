@@ -1,50 +1,71 @@
 "use client";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { LucideIcon } from "lucide-react";
+
 type MenuItem = {
-    name: string;
-    href: string;
-}
+  name: string;
+  href: string;
+  icon: LucideIcon;
+};
+
 type SidebarProps = {
-    title: string;
-    menus: MenuItem[];
-}
-export default function Sidebar({ 
-  menus, title,
-}: SidebarProps) {
+  title: string;
+  menus: MenuItem[];
+};
+
+export default function Sidebar({ menus, title }: SidebarProps) {
   const pathname = usePathname();
-    return (
-    <aside className="hidden md:flex w-64 min-h-screen bg-white border-r flex-col p-5">
-      <div className="flex items-center gap-3 mb-10">
-        <Image
-          src="/log.png"
-          alt="Logo"
-          width={60}
-          height={60}
-        />
-        <h1 className="text-2xl font-bold text-green-600">
-          {title}
-        </h1>
+
+  return (
+    <aside className="hidden min-h-screen w-72 flex-col border-r border-zinc-100 bg-gradient-to-b from-white to-green-50/40 p-6 md:flex">
+      <div className="mb-10 flex items-center gap-4">
+        <div className="rounded-2xl bg-green-100 p-2 shadow-sm">
+          <Image src="/log.png" alt="Logo" width={50} height={50} />
+        </div>
+
+        <div>
+          <h1 className="text-2xl font-extrabold text-green-600">{title}</h1>
+        </div>
       </div>
-      <nav className="space-y-2">
+
+      <nav className="space-y-3">
         {menus.map((menu, index) => {
           const isActive = pathname === menu.href;
+          const Icon = menu.icon;
+
           return (
             <Link
               key={index}
               href={menu.href}
-              className={`block px-4 py-3 rounded-xl transition font-medium ${
+              className={`group flex items-center gap-3 rounded-2xl px-4 py-3 font-medium transition-all duration-300 ${
                 isActive
-                  ? "bg-green-600 text-white"
-                  : "text-zinc-700 hover:bg-green-50 hover:text-green-600"
+                  ? "bg-gradient-to-r from-green-600 to-emerald-500 text-white shadow-lg shadow-green-200"
+                  : "text-zinc-700 hover:translate-x-1 hover:bg-white hover:text-green-600 hover:shadow-md"
               }`}
             >
-              {menu.name}
+              <Icon
+                size={20}
+                className={`transition-transform duration-300 ${
+                  isActive ? "scale-110" : "group-hover:scale-110"
+                }`}
+              />
+
+              <span>{menu.name}</span>
             </Link>
           );
         })}
       </nav>
-    </aside> 
-    )
+
+      <div className="mt-auto rounded-2xl bg-gradient-to-r from-green-600 to-emerald-500 p-4 text-white shadow-lg">
+        <p className="font-semibold">ShopAI Seller</p>
+
+        <p className="mt-1 text-xs text-green-100">
+          Grow your business with confidence 🚀
+        </p>
+      </div>
+    </aside>
+  );
 }

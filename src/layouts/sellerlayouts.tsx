@@ -4,17 +4,16 @@ import { sellerMenus } from "@/constants/menus";
 
 type SellerLayoutProps = {
   children: React.ReactNode;
-  title: string;
+  sidebarTitle: string;
 };
 
 export default function SellerLayout({
   children,
-  title,
+  sidebarTitle,
 }: SellerLayoutProps) {
   return (
     <BaseDashboardLayout
-      title={title}
-      sidebarTitle="Seller Panel"
+      sidebarTitle={sidebarTitle}
       menus={sellerMenus}>
       {children}
     </BaseDashboardLayout>

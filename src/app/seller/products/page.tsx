@@ -8,15 +8,8 @@ import Image from "next/image";
 import Input from "@/components/ui/Input";
 import { ArrowUp, ArrowDown, ArrowUpDown, Loader2 } from "lucide-react";
 import Swal from "sweetalert2";
-
-type Product = {
-  id: number;
-  name: string;
-  price: number;
-  stock: number;
-  status: string;
-  image: string;
-};
+import Pagination from "@/components/ui/Pagination";
+import { ProductItem } from "@/types/product";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -24,12 +17,10 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export default function SellerProducts() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalProducts, setTotalProducts] = useState(0);
   const currentPage = Number(searchParams.get("page")) || 1;
-  const [nextPage, setNextPage] = useState(null);
-  const [previousPage, setPreviousPage] = useState(null);
   const search = searchParams.get("search") || "";
   const [searchInput, setSearchInput] = useState(search);
   const status = searchParams.get("status") || "";
@@ -76,8 +67,6 @@ export default function SellerProducts() {
       const data = await response.json();
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setProducts(data.results.data);
-      setNextPage(data.next);
-      setPreviousPage(data.previous);
       setTotalProducts(data.count);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -149,43 +138,54 @@ export default function SellerProducts() {
       });
     }
   };
+
+  const PAGE_SIZE = 5;
+  const totalPages = Math.ceil(totalProducts / PAGE_SIZE);
+  const handlePageChange = (page: number) => {
+    updateQueryParams(page, searchInput, status, ordering);
+  };
   return (
-    <SellerLayout title="Products">
+    <SellerLayout sidebarTitle="Product">
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-800">Products</h1>
-          <p className="mt-1 text-zinc-500">Manage your products easily</p>
+          <h1 className="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-3xl font-bold text-transparent">
+            Products
+          </h1>
         </div>
         <Link href="/seller/products/add">
           <Button variant="success">+ Add Product</Button>
         </Link>
       </div>
-      <div className="overflow-hidden rounded-2xl border bg-white shadow-sm">
+      <div className="overflow-hidden rounded-3xl border border-green-100 bg-white shadow-lg shadow-green-100/30">
         <div className="flex flex-col">
-          <div className="mt-5 mb-6 flex flex-col gap-4 px-4 md:flex-row md:items-end">
-            <Input
-              label="Search Product"
-              placeholder="Search products..."
-              value={searchInput}
-              onChange={(e) => {
-                setSearchInput(e.target.value);
-              }}
-              containerClassName="md:w-80"
-            />
-            <div className="flex flex-col">
-              <label className="font-bold text-zinc-600">Filter Status</label>
-              <select
-                value={status}
-                onChange={(e) => {
-                  updateQueryParams(1, searchInput, e.target.value, ordering);
-                }}
-                className="mt-1 rounded-xl border border-zinc-300 bg-white px-4 py-3 text-zinc-700 transition outline-none focus:ring-2 focus:ring-green-400 md:w-56"
-              >
-                <option value="">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="soldout">Soldout</option>
-              </select>
+          <div className="m-4 rounded-3xl border border-green-100 bg-gradient-to-r from-green-50 via-white to-emerald-50 p-5 shadow-sm">
+            <div className="flex flex-col gap-4 md:flex-row md:items-end">
+              <Input
+                label="Search Product"
+                placeholder="Search products..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                containerClassName="md:w-96"
+              />
+
+              <div className="flex flex-col">
+                <label className="mb-1 text-sm font-semibold text-zinc-600">
+                  Filter Status
+                </label>
+
+                <select
+                  value={status}
+                  onChange={(e) =>
+                    updateQueryParams(1, searchInput, e.target.value, ordering)
+                  }
+                  className="rounded-2xl border border-green-100 bg-white px-4 py-3 text-zinc-700 shadow-sm transition-all outline-none focus:border-green-400 focus:ring-4 focus:ring-green-100 md:w-56"
+                >
+                  <option value="">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="soldout">Sold Out</option>
+                </select>
+              </div>
             </div>
           </div>
           {loading ? (
@@ -195,17 +195,20 @@ export default function SellerProducts() {
             </div>
           ) : products.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20">
-              <p className="text-lg font-semibold text-zinc-700">
+              <div className="mb-4 text-5xl">📦</div>
+              <h3 className="text-xl font-bold text-zinc-700">
                 No products found
+              </h3>
+              <p className="mt-2 text-zinc-500">
+                Try changing your search or add a new product.
               </p>
-
-              <p className="mt-2 text-sm text-zinc-500">
-                Try changing search or filter
-              </p>
+              <Link href="/seller/products/add" className="mt-6">
+                <Button variant="success">Add Product</Button>
+              </Link>
             </div>
           ) : (
             <table className="w-full text-sm">
-              <thead className="bg-zinc-50">
+              <thead className="bg-gradient-to-r from-green-50 to-emerald-50">
                 <tr className="text-left text-zinc-600">
                   <th className="px-6 py-4">Product</th>
                   <th>
@@ -242,6 +245,7 @@ export default function SellerProducts() {
                       )}
                     </div>
                   </th>
+                  <th className="px-6 py-4">Condition</th>
                   <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4">Action</th>
                 </tr>
@@ -254,11 +258,11 @@ export default function SellerProducts() {
                   return (
                     <tr
                       key={product.id}
-                      className="border-t transition hover:bg-zinc-50"
+                      className="border-b border-green-50 transition-all duration-200 hover:bg-green-50/50"
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-4">
-                          <div className="relative h-14 w-14 overflow-hidden rounded-xl bg-zinc-100">
+                          <div className="relative h-14 w-14 overflow-hidden rounded-2xl border border-green-100 bg-white shadow-sm">
                             <Image
                               src={imageUrl}
                               alt={product.name}
@@ -271,12 +275,50 @@ export default function SellerProducts() {
                             <h2 className="font-semibold text-zinc-800">
                               {product.name}
                             </h2>
+                            <p className="text-xs text-zinc-400">
+                              ID #{product.id}
+                            </p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">{product.price}</td>
-                      <td className="px-6 py-4">{product.stock}</td>
-                      <td className="px-6 py-4">{product.status}</td>
+                      <td className="font-semibold text-green-700">
+                        Rp {product.price.toLocaleString("id-ID")}
+                      </td>
+                      <td>
+                        <span
+                          className={`rounded-lg px-3 py-1 font-medium ${
+                            product.stock <= 5
+                              ? "bg-red-100 text-red-700"
+                              : "bg-green-50 text-green-700"
+                          }`}
+                        >
+                          {product.stock}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            product.condition === "new"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-amber-100 text-amber-700"
+                          }`}
+                        >
+                          {product.condition === "new" ? "Baru" : "Bekas"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            product.status === "active"
+                              ? "bg-green-100 text-green-700"
+                              : product.status === "inactive"
+                                ? "bg-zinc-100 text-zinc-600"
+                                : "bg-orange-100 text-orange-700"
+                          }`}
+                        >
+                          {product.status}
+                        </span>
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
                           <Link href={`/seller/products/${product.id}`}>
@@ -304,57 +346,20 @@ export default function SellerProducts() {
               </tbody>
             </table>
           )}
-          <div className="flex items-center justify-between border-t px-6 py-4">
-            <p className="text-sm text-zinc-500">
-              Total Products:
-              <span className="ml-1 font-semibold text-zinc-800">
-                {totalProducts}
-              </span>
-            </p>
-            <div className="flex items-center gap-3">
-              <Button
-                variant="success"
-                size="sm"
-                disabled={!previousPage}
-                onClick={() =>
-                  updateQueryParams(
-                    currentPage - 1,
-                    searchInput,
-                    status,
-                    ordering,
-                  )
-                }
-                className={`transition-all ${
-                  !previousPage
-                    ? "cursor-not-allowed opacity-50"
-                    : "hover:scale-105"
-                } `}
-              >
-                ← Previous
-              </Button>
-              <div className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold text-zinc-700 shadow-sm">
-                Page {currentPage}
-              </div>
-              <Button
-                variant="success"
-                size="sm"
-                disabled={!nextPage}
-                onClick={() =>
-                  updateQueryParams(
-                    currentPage + 1,
-                    searchInput,
-                    status,
-                    ordering,
-                  )
-                }
-                className={`transition-all ${
-                  !nextPage
-                    ? "cursor-not-allowed opacity-50"
-                    : "hover:scale-105"
-                } `}
-              >
-                Next →
-              </Button>
+          <div className="border-t border-green-100 px-6 py-6">
+            <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+              <p className="text-sm text-zinc-500">
+                Total Products:
+                <span className="ml-1 font-semibold text-green-700">
+                  {totalProducts}
+                </span>
+              </p>
+
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
             </div>
           </div>
         </div>

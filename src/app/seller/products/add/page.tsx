@@ -15,6 +15,7 @@ export default function AddProductPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [stock, setStock] = useState("");
+  const [condition, setCondition] = useState("new");
   const [status, setStatus] = useState("active");
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -46,6 +47,7 @@ export default function AddProductPage() {
       if (image) {
         formData.append("image", image);
       }
+      formData.append("condition", condition);
       const response = await fetch(
         "http://127.0.0.1:8000/api/seller/products/",
         {
@@ -81,7 +83,7 @@ export default function AddProductPage() {
     }
   };
   return (
-    <SellerLayout title="Add Product">
+    <SellerLayout sidebarTitle="Add Product">
       <div className="min-h-screen bg-zinc-100 p-6">
         <div className="mx-auto max-w-5xl">
           <h1 className="mb-8 text-3xl font-bold text-zinc-800">
@@ -132,6 +134,35 @@ export default function AddProductPage() {
                     <option value="inactive">Inactive</option>
                     <option value="sold_out">Sold Out</option>
                   </select>
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium">Kondisi</label>
+                  <div className="flex gap-4">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        id="new"
+                        name="condition"
+                        checked={condition === "new"}
+                        onChange={() => setCondition("new")}
+                      />
+                      <label htmlFor="new" className="text-sm text-gray-600">
+                        Baru
+                      </label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        id="used"
+                        name="condition"
+                        checked={condition === "used"}
+                        onChange={() => setCondition("used")}
+                      />
+                      <label htmlFor="used" className="text-sm text-gray-600">
+                        Bekas
+                      </label>
+                    </div>
+                  </div>
                 </div>
                 <div>
                   <label className="mb-2 block text-sm font-medium">Stok</label>
