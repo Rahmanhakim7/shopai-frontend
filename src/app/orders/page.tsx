@@ -74,7 +74,6 @@ export default function OrdersPage() {
     <BuyerLayout>
       <div className="min-h-screen bg-gray-50 p-6">
         <h1 className="mb-6 text-2xl font-bold">Pesanan Saya</h1>
-
         {orders.length === 0 ? (
           <div className="rounded-xl bg-white p-8 text-center shadow-sm">
             Belum ada pesanan

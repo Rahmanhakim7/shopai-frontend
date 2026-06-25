@@ -24,7 +24,6 @@ export default function Input({
         <label className="font-bold text-zinc-600">{label}</label>
       )}
 
-      {/* INPUT */}
       <input
         {...props}
         className={`transition ${

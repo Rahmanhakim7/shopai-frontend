@@ -129,14 +129,19 @@ export default function CartPage() {
   }, 0);
 
   const handleCheckout = () => {
-    const checkoutData = cart
-      .map((seller) => ({
-        ...seller,
-        items: seller.items.filter((item) =>
-          selectedItems.includes(item.cart_item_id),
-        ),
-      }))
-      .filter((seller) => seller.items.length > 0);
+    const checkoutData = cart.flatMap((seller) =>
+      seller.items
+        .filter((item) => selectedItems.includes(item.cart_item_id))
+        .map((item) => ({
+          product_id: item.product_id,
+          quantity: item.quantity,
+          name: item.name,
+          price: item.price,
+          image: item.image,
+          seller_name: seller.seller_name,
+          cart_item_id: item.cart_item_id,
+        })),
+    );
     localStorage.setItem("checkout_data", JSON.stringify(checkoutData));
     router.push("/checkout");
   };

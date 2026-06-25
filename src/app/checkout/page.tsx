@@ -7,77 +7,55 @@ import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 
-type CartItem = {
-  cart_item_id: number;
+type CheckoutItem = {
   product_id: number;
+  quantity: number;
   name: string;
   price: number;
-  quantity: number;
   image: string | null;
-  subtotal: number;
-};
-
-type CheckoutSeller = {
-  seller_id: number;
   seller_name: string;
-  items: CartItem[];
+  cart_item_id?: number;
 };
 
 const MEDIA_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function CheckoutPage() {
   const router = useRouter();
-
-  const [checkoutData, setCheckoutData] = useState<CheckoutSeller[]>([]);
+  const [checkoutData, setCheckoutData] = useState<CheckoutItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem("checkout_data");
-
       if (!stored) {
         router.replace("/cart");
         return;
       }
-
-      const parsed = JSON.parse(stored) as CheckoutSeller[];
-
+      const parsed = JSON.parse(stored) as CheckoutItem[];
       if (!parsed.length) {
         router.replace("/cart");
         return;
       }
-
       setCheckoutData(parsed);
     } catch (err) {
       console.error(err);
       localStorage.removeItem("checkout_data");
-      router.replace("/cart");
+      router.replace("/product");
     } finally {
       setLoading(false);
     }
   }, [router]);
 
   const grandTotal = useMemo(() => {
-    return checkoutData.reduce((acc, seller) => {
-      return (
-        acc +
-        seller.items.reduce((sum, item) => {
-          return sum + item.subtotal;
-        }, 0)
-      );
-    }, 0);
+    return checkoutData.reduce(
+      (acc, item) => acc + item.price * item.quantity,
+      0,
+    );
   }, [checkoutData]);
 
   const totalItems = useMemo(() => {
-    return checkoutData.reduce((acc, seller) => {
-      return (
-        acc +
-        seller.items.reduce((sum, item) => {
-          return sum + item.quantity;
-        }, 0)
-      );
-    }, 0);
+    return checkoutData.reduce((acc, item) => acc + item.quantity, 0);
   }, [checkoutData]);
 
   const format = (n: number) =>
@@ -89,24 +67,37 @@ export default function CheckoutPage() {
   const handleCreateOrder = async () => {
     try {
       setSubmitting(true);
+      const items = checkoutData.map((item) => ({
+        product_id: item.product_id,
+        quantity: item.quantity,
+      }));
 
-      const cartItemIds = checkoutData.flatMap((seller) =>
-        seller.items.map((item) => item.cart_item_id),
-      );
-
-      const res = await api.post("/orders/create/", {
-        cart_item_ids: cartItemIds,
+      await api.post("/orders/create/", {
+        items,
       });
-
       localStorage.removeItem("checkout_data");
-
-      router.replace("/orders/");
+      router.replace("/orders");
     } catch (err) {
       console.error("Failed create order:", err);
     } finally {
       setSubmitting(false);
     }
   };
+
+  const groupedItems = useMemo(() => {
+    return checkoutData.reduce(
+      (acc, item) => {
+        if (!acc[item.seller_name]) {
+          acc[item.seller_name] = [];
+        }
+
+        acc[item.seller_name].push(item);
+
+        return acc;
+      },
+      {} as Record<string, CheckoutItem[]>,
+    );
+  }, [checkoutData]);
 
   if (loading) {
     return (
@@ -125,25 +116,25 @@ export default function CheckoutPage() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-4 lg:col-span-2">
-            {checkoutData.map((seller) => {
-              const sellerTotal = seller.items.reduce(
-                (acc, item) => acc + item.subtotal,
+            {Object.entries(groupedItems).map(([sellerName, items]) => {
+              const sellerTotal = items.reduce(
+                (acc, item) => acc + item.price * item.quantity,
                 0,
               );
 
               return (
                 <div
-                  key={seller.seller_id}
+                  key={sellerName}
                   className="overflow-hidden rounded-2xl bg-white shadow-sm"
                 >
                   <div className="bg-green-100 px-4 py-3 font-semibold">
-                    🏪 {seller.seller_name}
+                    🏪 {sellerName}
                   </div>
 
                   <div className="p-4">
-                    {seller.items.map((item) => (
+                    {items.map((item) => (
                       <div
-                        key={item.cart_item_id}
+                        key={`${item.product_id}-${item.cart_item_id ?? "buynow"}`}
                         className="flex items-center gap-4 border-b py-4 last:border-0"
                       >
                         <Image
@@ -170,7 +161,7 @@ export default function CheckoutPage() {
                         </div>
 
                         <div className="font-semibold text-green-600">
-                          {format(item.subtotal)}
+                          {format(item.price * item.quantity)}
                         </div>
                       </div>
                     ))}

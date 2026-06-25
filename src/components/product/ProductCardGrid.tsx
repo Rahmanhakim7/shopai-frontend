@@ -22,9 +22,7 @@ export default function ProductCardGrid({
   refreshWishlist,
 }: Props) {
   const router = useRouter();
-
   const isWishlisted = wishlistSet.has(product.id);
-
   const imageUrl =
     product.image && product.image.startsWith("http")
       ? product.image
@@ -34,7 +32,6 @@ export default function ProductCardGrid({
 
   const toggleWishlist = async (e: React.MouseEvent) => {
     e.stopPropagation();
-
     try {
       if (isWishlisted) {
         await api.delete(`/wishlist/${product.id}/`);
@@ -43,7 +40,6 @@ export default function ProductCardGrid({
           product_id: product.id,
         });
       }
-
       await refreshWishlist();
     } catch (err) {
       console.error("Wishlist error", err);
@@ -52,7 +48,6 @@ export default function ProductCardGrid({
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
-
     try {
       await api.post("/cart/add/", {
         product_id: product.id,
@@ -83,7 +78,6 @@ export default function ProductCardGrid({
             }
           />
         </button>
-
         {imageUrl ? (
           <Image
             src={imageUrl}
@@ -102,15 +96,16 @@ export default function ProductCardGrid({
         <h2 className="line-clamp-2 text-base font-semibold text-gray-800">
           {product.name}
         </h2>
-
-        <div className="mt-2 text-sm text-yellow-500">
-          ⭐⭐⭐⭐⭐ <span className="text-xs text-gray-500">(120)</span>
+        <div className="mt-2 flex items-center gap-2 text-sm">
+          <span className="font-medium text-yellow-500">
+            ★ {product.average_rating}
+          </span>
+          <span className="text-gray-400">|</span>
+          <span className="text-gray-500">{product.review_count} ulasan</span>
         </div>
-
         <p className="mt-3 text-xl font-bold text-green-600">
           Rp {product.price.toLocaleString()}
         </p>
-
         <span
           className={`mt-2 inline-flex w-fit rounded-full px-2 py-1 text-xs ${
             product.stock > 10

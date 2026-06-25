@@ -1,45 +1,55 @@
 "use client";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
-import { useAuth } from "@/hooks/useAuth";
+import { registerApi } from "@/features/auth/auth.api";
+import { RegisterRequest } from "@/types/auth";
 import { useRouter } from "next/navigation";
-import { loginApi } from "@/features/auth/auth.api";
-import { Eye, EyeOff } from "lucide-react";
 
-export default function LoginForm() {
-  const { login } = useAuth();
+export default function RegisterForm() {
+  const [formData, setFormData] = useState<RegisterRequest>({
+    username: "",
+    email: "",
+    password: "",
+    role: "buyer",
+  });
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!username || !password) {
-      setError("Username dan Password wajib diisi");
+    if (!formData.username || !formData.email || !formData.password) {
+      setError("Semua field wajib diisi");
       return;
     }
+    if (!formData.email.includes("@")) {
+      setError("Format email tidak valid");
+      return;
+    }
+    setLoading(true);
     setError("");
     try {
-      const response = await loginApi({
-        username,
-        password,
-      });
-      login(response.access, response.refresh, response.user);
-      if (response.user.role === "buyer") {
-        router.push("/");
-      } else if (response.user.role === "seller") {
-        router.push("/seller/dashboard");
-      } else {
-        router.push("/admin");
-      }
+      await registerApi(formData);
+      alert("Registrasi berhasil");
+      router.push("/login");
     } catch (error) {
-      setError("Login gagal");
       console.error(error);
+      setError("Registrasi gagal");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,37 +70,67 @@ export default function LoginForm() {
             />
           </div>
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-green-600">
-              Selamat Datang
-            </h1>
+            <p className="mt-2 text-xl font-bold text-green-600">
+              Daftar untuk mulai menggunakan ShopAI
+            </p>
           </div>
         </div>
+
         {error && (
           <div className="rounded-xl border border-red-300 bg-red-100 px-4 py-3 text-sm text-red-600">
             {error}
           </div>
         )}
+
         <Input
           label="Username"
+          name="username"
           placeholder="Masukkan username"
-          value={username}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setUsername(e.target.value)
-          }
-          error={!username && error ? "Username wajib diisi" : ""}
+          value={formData.username}
+          autoComplete="username"
+          onChange={handleChange}
         />
+
+        <Input
+          label="Email"
+          name="email"
+          type="email"
+          placeholder="Masukkan email"
+          value={formData.email}
+          autoComplete="email"
+          onChange={handleChange}
+        />
+
         <div>
-          <label className="mb-2 block font-bold text-zinc-700">
-            Password
+          <label className="mb-2 block font-bold text-zinc-600">
+            Daftar Sebagai
           </label>
+
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            className="w-full rounded-xl border border-zinc-300 px-4 py-3 outline-none focus:border-green-500"
+          >
+            <option value="buyer">Buyer</option>
+            <option value="seller">Seller</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="mb-2 block font-bold text-zinc-600">Password</label>
+
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
               placeholder="Masukkan password"
+              autoComplete="new-password"
               className="w-full rounded-xl border border-zinc-300 px-4 py-3 pr-12 outline-none focus:border-green-500"
             />
+
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
@@ -99,33 +139,23 @@ export default function LoginForm() {
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
-          {!password && error && (
-            <p className="mt-1 text-sm text-red-500">Password wajib diisi</p>
-          )}
-        </div>
-        <div className="flex justify-end">
-          <button
-            type="button"
-            className="text-sm text-green-600 transition hover:text-green-700"
-          >
-            Lupa password?
-          </button>
         </div>
         <Button
           type="submit"
-          loading={false}
           variant="success"
+          loading={loading}
           className="w-full"
         >
-          Login
+          Daftar
         </Button>
+
         <p className="text-center text-sm text-zinc-500">
-          Belum punya akun?{" "}
+          Sudah punya akun?{" "}
           <Link
-            href="/register"
+            href="/login"
             className="font-medium text-green-600 hover:underline"
           >
-            Register
+            Login
           </Link>
         </p>
       </form>

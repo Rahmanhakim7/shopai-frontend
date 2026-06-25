@@ -7,5 +7,7 @@ export type ProductItem = {
   image: string;
   seller_name: string;
   condition: string;
+  average_rating: string;
+  review_count: string;
 };
   

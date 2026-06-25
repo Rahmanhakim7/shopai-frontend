@@ -4,6 +4,14 @@ export interface LoginRequest {
   username: string;
   password: string;
 }
+
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+  role: "buyer" | "seller";
+}
+
 export interface UserInfo {
   id: number;
   username: string;

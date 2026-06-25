@@ -65,9 +65,6 @@ export default function SellerOrdersPage() {
       case "completed":
         return "bg-green-100 text-green-700";
 
-      case "cancelled":
-        return "bg-red-100 text-red-700";
-
       default:
         return "bg-zinc-100 text-zinc-700";
     }
@@ -130,7 +127,6 @@ export default function SellerOrdersPage() {
           )}
         </div>
 
-        {/* Loading */}
         {loading ? (
           <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
             <div className="animate-pulse">

@@ -192,7 +192,6 @@ export default function ShopPage() {
                 <h3 className="text-sm font-semibold text-gray-800">
                   Ketersediaan
                 </h3>
-
                 <div className="flex items-center gap-2 leading-none">
                   <Input
                     type="checkbox"
@@ -202,7 +201,6 @@ export default function ShopPage() {
                   />
                   <span className="text-sm text-gray-600">Stok Tersedia</span>
                 </div>
-
                 <div className="flex items-center gap-2 leading-none">
                   <Input
                     type="checkbox"
@@ -262,11 +260,9 @@ export default function ShopPage() {
                   <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-50 text-2xl">
                     🔍
                   </div>
-
                   <h2 className="text-lg font-semibold text-gray-800">
                     Produk tidak ditemukan
                   </h2>
-
                   <p className="mt-2 max-w-md text-sm text-gray-500">
                     Kami tidak menemukan produk untuk{" "}
                     <span className="font-medium text-gray-700">
@@ -274,7 +270,6 @@ export default function ShopPage() {
                     </span>
                     . Coba gunakan kata kunci lain atau hapus filter.
                   </p>
-
                   <div className="mt-6 flex gap-3">
                     <button
                       onClick={() => {
@@ -285,7 +280,6 @@ export default function ShopPage() {
                     >
                       Reset Pencarian
                     </button>
-
                     <button
                       onClick={() => {
                         setOrdering("latest");
