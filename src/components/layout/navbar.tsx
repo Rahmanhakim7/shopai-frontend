@@ -20,11 +20,8 @@ export default function Navbar() {
             className="relative rounded-2xl p-3 transition-all duration-300 hover:-translate-y-0.5 hover:bg-green-50 hover:text-green-600"
           >
             <Package size={22} className="text-zinc-700" />
-            <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-green-600 text-[10px] font-bold text-white">
-              3
-            </span>
           </Link>
-          <button className="rounded-2xl p-3 transition-all duration-300 hover:-translate-y-0.5 hover:bg-green-50 hover:text-green-600">
+          <button className="cursor-pointer rounded-2xl p-3 transition-all duration-300 hover:-translate-y-0.5 hover:bg-green-50 hover:text-green-600">
             <Bell size={22} className="text-zinc-700" />
           </button>
           <ProfileDropdown />

@@ -63,21 +63,21 @@ export default function SellerProductDetailPage() {
   }, []);
   if (loading) {
     return (
-      <SellerLayout title="Product Detail">
+      <SellerLayout sidebarTitle="Product Detail">
         <p>Loading...</p>
       </SellerLayout>
     );
   }
   if (!product) {
     return (
-      <SellerLayout title="Product Detail">
+      <SellerLayout sidebarTitle="Product Detail">
         <p>Product not found</p>
       </SellerLayout>
     );
   }
   const imageUrl = product.image?.startsWith("http")? product.image : `${API_URL}${product.image}`;
   return (
-    <SellerLayout title="Product Detail">
+    <SellerLayout sidebarTitle="Product Detail">
       <div className="max-w-6xl mx-auto">
         <div className="mb-6 flex items-center justify-between">
           <div>

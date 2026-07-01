@@ -10,11 +10,10 @@ export default function BuyerLayout({
   children: React.ReactNode;
 }) {
   const { token } = useAuth();
-
   return (
-    <div className="min-h-screen bg-zinc-50">
-      {token ? <BuyerNavbar /> : <GuestNavbar />}
-      <main>{children}</main>
-    </div>
+      <div className="min-h-screen bg-zinc-50">
+        {token ? <BuyerNavbar /> : <GuestNavbar />}
+        <main>{children}</main>
+      </div>
   );
 }

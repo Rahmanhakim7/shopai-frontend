@@ -2,8 +2,6 @@ import {
   LayoutDashboard,
   ShoppingBag,
   Package,
-  Receipt,
-  User,
 } from "lucide-react";
 
 export const sellerMenus = [
@@ -18,14 +16,9 @@ export const sellerMenus = [
     icon: ShoppingBag,
   },
   {
-    name: "orders",
+    name: "Orders",
     href: "/seller/orders",
     icon: Package,
-  },
-  {
-    name: "transactions",
-    href: "/seller/transactions",
-    icon: Receipt,
   },
 ];
 

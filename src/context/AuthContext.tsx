@@ -35,11 +35,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = (token: string, refreshToken: string, user: UserProfile) => {
     localStorage.setItem("token", token);
-
     localStorage.setItem("refresh", refreshToken);
-
     localStorage.setItem("user", JSON.stringify(user));
-
     setToken(token);
     setUser(user);
   };
@@ -70,10 +67,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-
   if (!context) {
     throw new Error("useAuth must be used inside AuthProvider");
   }
-
   return context;
 }

@@ -22,11 +22,11 @@ export default function BaseDashboardLayout({
   menus,
 }: BaseDashboardLayoutProps) {
   return (
-    <div className="flex min-h-screen bg-zinc-100">
+    <div className="flex h-screen bg-zinc-100">
       <Sidebar title={sidebarTitle} menus={menus} />
-      <div className="flex flex-1 flex-col">
+      <div className="ml-72 flex flex-1 flex-col overflow-hidden">
         <Navbar />
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
   );

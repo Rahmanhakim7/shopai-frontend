@@ -18,24 +18,20 @@ type SidebarProps = {
 
 export default function Sidebar({ menus, title }: SidebarProps) {
   const pathname = usePathname();
-
   return (
-    <aside className="hidden min-h-screen w-72 flex-col border-r border-zinc-100 bg-gradient-to-b from-white to-green-50/40 p-6 md:flex">
+    <aside className="fixed top-0 left-0 hidden h-screen w-72 flex-col border-r border-zinc-100 bg-gradient-to-b from-white to-green-50/40 p-6 md:flex">
       <div className="mb-10 flex items-center gap-4">
         <div className="rounded-2xl bg-green-100 p-2 shadow-sm">
           <Image src="/log.png" alt="Logo" width={50} height={50} />
         </div>
-
         <div>
           <h1 className="text-2xl font-extrabold text-green-600">{title}</h1>
         </div>
       </div>
-
       <nav className="space-y-3">
         {menus.map((menu, index) => {
           const isActive = pathname === menu.href;
           const Icon = menu.icon;
-
           return (
             <Link
               key={index}
@@ -52,16 +48,13 @@ export default function Sidebar({ menus, title }: SidebarProps) {
                   isActive ? "scale-110" : "group-hover:scale-110"
                 }`}
               />
-
               <span>{menu.name}</span>
             </Link>
           );
         })}
       </nav>
-
       <div className="mt-auto rounded-2xl bg-gradient-to-r from-green-600 to-emerald-500 p-4 text-white shadow-lg">
         <p className="font-semibold">ShopAI Seller</p>
-
         <p className="mt-1 text-xs text-green-100">
           Grow your business with confidence 🚀
         </p>

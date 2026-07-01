@@ -8,7 +8,6 @@ import { Loader2 } from "lucide-react";
 import Swal from "sweetalert2";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export default function EditProductPage() {
   const params = useParams();
   const router = useRouter();
@@ -115,7 +114,7 @@ export default function EditProductPage() {
   };
 
   return (
-    <SellerLayout title="Edit Product">
+    <SellerLayout sidebarTitle="Edit Product">
       <div className="p-6">
         <div className="mx-auto max-w-7xl rounded-3xl bg-white p-8 shadow">
           <h1 className="mb-8 text-3xl font-bold">Edit Product</h1>
@@ -201,7 +200,7 @@ export default function EditProductPage() {
                     />
                   </div>
                 )}
-                <Button type="submit" disabled={submitting} className="w-full">
+                <Button variant="success" type="submit" disabled={submitting} className="w-full">
                   {submitting ? (
                     <Loader2 className="h-5 w-5 animate-spin text-white" />
                   ) : (
