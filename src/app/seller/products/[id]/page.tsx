@@ -5,173 +5,127 @@ import SellerLayout from "@/layouts/sellerlayouts";
 import Image from "next/image";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
-
-type Product = {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  stock: number;
-  status: string;
-  image: string;
-};
+import RoleGuard from "@/components/guards/RoleGuard";
+import Loader from "@/components/ui/Loader";
+import { Product } from "@/types/product";
+import { getSellerProductDetail } from "@/features/products/product.api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
 export default function SellerProductDetailPage() {
   const params = useParams();
-  const router = useRouter();
-  const [product, setProduct] = useState<Product | null>(
-    null
-  );
+  const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
-  const fetchProducts = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Please login first");
-        router.push("/login");
-        return;
-      }
-      const response = await fetch(
-        `${API_BASE_URL}/seller/products/${params.id}/`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const data = await response.json();
-      console.log("product detail", data);
-      setProduct(data.data);
-    } catch (error) {
-      console.error(
-        "Error fetching product detail:",
-        error
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+
   useEffect(() => {
-    const loadProducts =  async () => {
-      await fetchProducts();
-    }
-    loadProducts();
-  }, []);
-  if (loading) {
-    return (
-      <SellerLayout sidebarTitle="Product Detail">
-        <p>Loading...</p>
-      </SellerLayout>
-    );
-  }
-  if (!product) {
-    return (
-      <SellerLayout sidebarTitle="Product Detail">
-        <p>Product not found</p>
-      </SellerLayout>
-    );
-  }
-  const imageUrl = product.image?.startsWith("http")? product.image : `${API_URL}${product.image}`;
+    const fetchProduct = async () => {
+      setLoading(true);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        const response = await getSellerProductDetail(params.id as string);
+        setProduct(response.data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [params.id]);
+
+  const imageUrl = product?.image?.startsWith("http")
+    ? product?.image
+    : `${API_URL}${product?.image}`;
+
   return (
-    <SellerLayout sidebarTitle="Product Detail">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-zinc-800">
-              Product Detail
-            </h1>
-            <p className="text-zinc-500 mt-1">
-              Detail information about your product
-            </p>
-          </div>
-          <Link
-            href={`/seller/products/${product.id}/edit/`}>
-            <Button variant="primary">
-              Edit Product
-            </Button>
-          </Link>
-        </div>
-        <div className="bg-white rounded-3xl shadow-md p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
-          <div>
-            <div className="relative w-full h-[400px] rounded-3xl overflow-hidden bg-zinc-100">
-              <Image
-                src={imageUrl}
-                alt={product.name}
-                fill
-                className="object-cover"
-                unoptimized
-              />
-            </div>
-          </div>
-          <div className="space-y-6">
+    <RoleGuard role="seller">
+      <SellerLayout sidebarTitle="Detail Produk">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-2 flex flex-col gap-4 border-zinc-200 pb-6 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-sm text-zinc-500 mb-2">
-                Product Name
-              </p>
-              <h2 className="text-3xl font-bold text-zinc-800">
-                {product.name}
-              </h2>
-            </div>
-            <div>
-              <p className="text-sm text-zinc-500 mb-2">
-                Price
-              </p>
-              <h3 className="text-2xl font-semibold text-green-600">
-                Rp {product.price}
-              </h3>
-            </div>
-            <div>
-              <p className="text-sm text-zinc-500 mb-2">
-                Stock
-              </p>
-              <p className="text-lg font-medium">
-                {product.stock}
+              <h1 className="text-3xl font-bold text-zinc-800">
+                Detail Produk
+              </h1>
+              <p className="mt-2 text-sm text-zinc-500">
+                Lihat informasi lengkap mengenai produk yang kamu jual.
               </p>
             </div>
-            <div>
-              <p className="text-sm text-zinc-500 mb-2">
-                Status
-              </p>
-              <span
-                className={`px-4 py-2 rounded-full text-sm font-medium
-                ${
-                  product.status === "active"
-                    ? "bg-green-100 text-green-600"
-                    : product.status === "inactive"
-                    ? "bg-yellow-100 text-yellow-600"
-                    : "bg-red-100 text-red-600"
-                }`}>
-                {product.status}
-              </span>
-            </div>
-            <div>
-              <p className="text-sm text-zinc-500 mb-2">
-                Description
-              </p>
-              <p className="text-zinc-700 leading-relaxed">
-                {product.description}
-              </p>
-            </div>
-            <div className="flex gap-3 pt-4">
-              <Link
-                href={`/seller/products/${product.id}/edit/`}>
-                <Button variant="primary">
-                  Edit
-                </Button>
+            {!loading && product && (
+              <Link href={`/seller/products/${product.id}/edit`}>
+                <Button variant="success">Edit Produk</Button>
               </Link>
-              <Link href="/seller/products">
-                <Button variant="secondary">
-                  Back
-                </Button>
-              </Link>
-            </div>
+            )}
           </div>
+          {loading ? (
+            <Loader text="Memuat detail produk..." size="lg" />
+          ) : !product ? (
+            <div className="py-20 text-center">
+              <p className="text-zinc-500">Produk tidak ditemukan.</p>
+            </div>
+          ) : (
+            <div className="grid gap-8 lg:grid-cols-2">
+              <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+                <h2 className="mb-5 text-lg font-semibold">Gambar Produk</h2>
+                <div className="relative h-[500px] overflow-hidden rounded-2xl bg-zinc-100">
+                  <Image
+                    src={imageUrl}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+              </div>
+              <div className="rounded-3xl border border-zinc-200 bg-white p-8 shadow-sm">
+                <div className="space-y-7">
+                  <div>
+                    <p className="text-sm text-zinc-500">Nama Produk</p>
+                    <h2 className="mt-1 text-3xl font-bold text-zinc-800">
+                      {product.name}
+                    </h2>
+                  </div>
+                  <div>
+                    <p className="text-sm text-zinc-500">Harga</p>
+                    <h3 className="mt-1 text-4xl font-bold text-green-600">
+                      Rp {product.price}
+                    </h3>
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl bg-zinc-50 p-4">
+                    <div>
+                      <p className="text-sm text-zinc-500">Stok</p>
+                      <p className="text-xl font-semibold">{product.stock}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-zinc-500">Status</p>
+                      <span
+                        className={`mt-2 inline-flex rounded-full px-4 py-1 text-sm font-semibold ${
+                          product.status === "active"
+                            ? "bg-green-100 text-green-700"
+                            : product.status === "inactive"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {product.status}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="mb-2 text-sm text-zinc-500">Deskripsi</p>
+                    <div className="rounded-xl bg-zinc-50 p-5 text-justify leading-7 text-zinc-700">
+                      {product.description}
+                    </div>
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <Link href="/seller/products">
+                      <Button variant="secondary">Kembali</Button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
-    </SellerLayout>
+      </SellerLayout>
+    </RoleGuard>
   );
 }

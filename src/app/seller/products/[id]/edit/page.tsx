@@ -3,9 +3,16 @@ import { useEffect, useState, ChangeEvent, FormEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import SellerLayout from "@/layouts/sellerlayouts";
+import {
+  getSellerProductDetail,
+  updateSellerProduct,
+} from "@/features/products/product.api";
 import Button from "@/components/ui/Button";
 import { Loader2 } from "lucide-react";
 import Swal from "sweetalert2";
+import Input from "@/components/ui/Input";
+import Textarea from "@/components/ui/TextArea";
+import Select from "@/components/ui/Select";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 export default function EditProductPage() {
@@ -21,21 +28,16 @@ export default function EditProductPage() {
   const [preview, setPreview] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
+
   const fetchProduct = async () => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/api/seller/products/${id}/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
+      const data = await getSellerProductDetail(id);
       const product = data.data;
       setName(product.name);
       setDescription(product.description);
-      setPrice(product.price);
-      setStock(product.stock);
+      setPrice(product.price.toString());
+      setStock(product.stock.toString());
       setStatus(product.status);
       if (product.image) {
         setPreview(`${API_URL}${product.image}`);
@@ -53,6 +55,7 @@ export default function EditProductPage() {
     };
     loadProduct();
   }, [id]);
+
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -60,11 +63,11 @@ export default function EditProductPage() {
       setPreview(URL.createObjectURL(file));
     }
   };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       setSubmitting(true);
-      const token = localStorage.getItem("token");
       const formData = new FormData();
       formData.append("name", name);
       formData.append("description", description);
@@ -74,25 +77,8 @@ export default function EditProductPage() {
       if (image) {
         formData.append("image", image);
       }
-      const response = await fetch(`${API_URL}/api/seller/products/${id}/`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        Swal.fire({
-          title: "Error!",
-          text: data.message || "Failed update product",
-          icon: "error",
-        });
-        return;
-      }
+      await updateSellerProduct(id, formData);
       await new Promise((resolve) => setTimeout(resolve, 1200));
-      setSubmitting(false);
       await Swal.fire({
         title: "Success!",
         text: "Product updated successfully",
@@ -102,7 +88,7 @@ export default function EditProductPage() {
       });
       router.push("/seller/products");
     } catch (error) {
-      console.log(error);
+      console.error(error);
       Swal.fire({
         title: "Error!",
         text: "Something went wrong",
@@ -116,8 +102,13 @@ export default function EditProductPage() {
   return (
     <SellerLayout sidebarTitle="Edit Product">
       <div className="p-6">
-        <div className="mx-auto max-w-7xl rounded-3xl bg-white p-8 shadow">
-          <h1 className="mb-8 text-3xl font-bold">Edit Product</h1>
+        <div className="mx-auto max-w-7xl rounded-3xl border border-zinc-200 bg-white p-8 shadow-sm">
+          <div className="mb-2 border-zinc-200 pb-5">
+            <h1 className="text-3xl font-bold text-zinc-800">Edit Produk</h1>
+            <p className="mt-2 text-sm text-zinc-500">
+              Perbarui informasi produk di tokomu.
+            </p>
+          </div>
           {fetchLoading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 className="h-10 w-10 animate-spin text-green-600" />
@@ -127,37 +118,36 @@ export default function EditProductPage() {
               onSubmit={handleSubmit}
               className="grid grid-cols-1 gap-10 md:grid-cols-2"
             >
-              <div className="space-y-5">
+              <div className="space-y-5 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
                 <div>
-                  <label className="mb-2 block font-medium">Product Name</label>
-                  <input
-                    type="text"
+                  <Input
+                    label="Nama Produk"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-2xl border px-4 py-3"
+                    placeholder="Enter product name"
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block font-medium">Description</label>
-                  <textarea
+                  <Textarea
+                    label="Deskripsi Produk"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={5}
-                    className="w-full rounded-2xl border px-4 py-3"
+                    placeholder="Masukkan Deskripsi Product ....."
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block font-medium">Price</label>
-                  <input
+                  <Input
+                    label="Harga Produk"
                     type="number"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    className="w-full rounded-2xl border px-4 py-3"
+                    placeholder="0"
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block font-medium">Stock</label>
-                  <input
+                  <Input
+                    label="Stok Produk"
                     type="number"
                     value={stock}
                     onChange={(e) => setStock(e.target.value)}
@@ -165,32 +155,29 @@ export default function EditProductPage() {
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block font-medium">Status</label>
-                  <select
+                  <Select
+                    label="Status Produk"
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="w-full rounded-2xl border px-4 py-3"
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="sold_out">Sold Out</option>
-                  </select>
+                    options={[
+                      { label: "Active", value: "active" },
+                      { label: "Inactive", value: "inactive" },
+                      { label: "Sold Out", value: "sold_out" },
+                    ]}
+                  />
                 </div>
               </div>
-              <div className="space-y-5">
+              <div className="space-y-5 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
                 <div>
-                  <label className="mb-2 block font-medium">
-                    Product Image
-                  </label>
-                  <input
+                  <Input
+                    label="Product Image"
                     type="file"
                     accept="image/*"
                     onChange={handleImageChange}
-                    className="w-full"
                   />
                 </div>
                 {preview && (
-                  <div className="relative h-[400px] w-full overflow-hidden rounded-3xl border bg-zinc-100">
+                  <div className="relative h-[420px] w-full overflow-hidden rounded-2xl border border-dashed border-zinc-300 bg-zinc-100">
                     <Image
                       src={preview}
                       alt="Preview"
@@ -200,7 +187,12 @@ export default function EditProductPage() {
                     />
                   </div>
                 )}
-                <Button variant="success" type="submit" disabled={submitting} className="w-full">
+                <Button
+                  variant="success"
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full"
+                >
                   {submitting ? (
                     <Loader2 className="h-5 w-5 animate-spin text-white" />
                   ) : (

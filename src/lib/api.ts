@@ -29,15 +29,11 @@ async function refreshAccessToken() {
   if (!refresh) {
     throw new Error("No refresh token found");
   }
-
   const response = await axios.post(`${API_URL}/token/refresh/`, {
     refresh,
   });
-
   const newAccess = response.data.access;
-
   localStorage.setItem("token", newAccess);
-
   return newAccess;
 }
 
@@ -67,10 +63,8 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-
       if (isRefreshing) {
         return new Promise((resolve) => {
           subscribeTokenRefresh((token) => {
@@ -79,29 +73,21 @@ api.interceptors.response.use(
           });
         });
       }
-
       isRefreshing = true;
-
       try {
         const newAccess = await refreshAccessToken();
-
         onRefreshed(newAccess);
-
         originalRequest.headers.Authorization = `Bearer ${newAccess}`;
-
         return api(originalRequest);
       } catch (refreshError) {
         localStorage.removeItem("token");
         localStorage.removeItem("refresh");
-
         window.location.href = "/login";
-
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
       }
     }
-
     return Promise.reject(error);
   },
 );

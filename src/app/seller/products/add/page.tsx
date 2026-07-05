@@ -6,7 +6,7 @@ import SellerLayout from "@/layouts/sellerlayouts";
 import Swal from "sweetalert2";
 import { Loader2 } from "lucide-react";
 import RoleGuard from "@/components/guards/RoleGuard";
-import { useAuth } from "@/context/AuthContext";
+import { createSellerProduct } from "@/features/products/product.api";
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -19,7 +19,6 @@ export default function AddProductPage() {
   const [stock, setStock] = useState("");
   const [condition, setCondition] = useState("new");
   const [status, setStatus] = useState("active");
-  const { user, loading: authLoading } = useAuth();
   
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -29,62 +28,39 @@ export default function AddProductPage() {
     }
   };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("token");
-      if (!token) {
-        Swal.fire({
-          title: "Login Required",
-          text: "Please login first",
-          icon: "warning",
-        });
-        router.push("/login");
-        return;
-      }
-      const formData = new FormData();
-      formData.append("name", name);
-      formData.append("price", price);
-      formData.append("description", description);
-      formData.append("stock", stock);
-      formData.append("status", status);
-      if (image) {
-        formData.append("image", image);
-      }
-      formData.append("condition", condition);
-      const response = await fetch(
-        "http://127.0.0.1:8000/api/seller/products/",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        },
-      );
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to add product");
-      }
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      setLoading(false);
-      await Swal.fire({
-        title: "Success!",
-        text: "Product added successfully",
-        icon: "success",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      router.push("/seller/products");
-    } catch (error) {
-      setLoading(false);
-      Swal.fire({
-        title: "Error!",
-        text: "Failed to add product",
-        icon: "error",
-      });
+  e.preventDefault();
+  try {
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("price", price);
+    formData.append("description", description);
+    formData.append("stock", stock);
+    formData.append("status", status);
+    formData.append("condition", condition);
+    if (image) {
+      formData.append("image", image);
     }
-  };
+    await createSellerProduct(formData);
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    await Swal.fire({
+      title: "Success!",
+      text: "Product added successfully",
+      icon: "success",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+    router.push("/seller/products");
+  } catch (error) {
+    Swal.fire({
+      title: "Error!",
+      text: "Failed to add product",
+      icon: "error",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <RoleGuard role="seller">
       <SellerLayout sidebarTitle="Tambah Produk">

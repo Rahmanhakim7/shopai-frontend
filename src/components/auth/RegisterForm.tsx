@@ -8,6 +8,7 @@ import Button from "@/components/ui/Button";
 import { registerApi } from "@/features/auth/auth.api";
 import { RegisterRequest } from "@/types/auth";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function RegisterForm() {
   const [formData, setFormData] = useState<RegisterRequest>({
@@ -20,6 +21,9 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
@@ -39,19 +43,42 @@ export default function RegisterForm() {
       setError("Format email tidak valid");
       return;
     }
+
+    const formDataUpload = new FormData();
+    formDataUpload.append("role", formData.role);
+    formDataUpload.append("username", formData.username);
+    formDataUpload.append("email", formData.email);
+    formDataUpload.append("password", formData.password);
+    if (profileImage) {
+      formDataUpload.append("profile_image", profileImage);
+    }
     setLoading(true);
     setError("");
     try {
-      await registerApi(formData);
+      await registerApi(formDataUpload);
       alert("Registrasi berhasil");
       router.push("/login");
     } catch (error) {
-      console.error(error);
       setError("Registrasi gagal");
     } finally {
       setLoading(false);
     }
   };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setProfileImage(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-100 via-white to-emerald-100 px-4 py-8">
@@ -69,11 +96,6 @@ export default function RegisterForm() {
               priority
             />
           </div>
-          <div className="text-center">
-            <p className="mt-2 text-xl font-bold text-green-600">
-              Daftar untuk mulai menggunakan ShopAI
-            </p>
-          </div>
         </div>
 
         {error && (
@@ -81,6 +103,27 @@ export default function RegisterForm() {
             {error}
           </div>
         )}
+
+        <div className="flex flex-col items-center gap-3">
+          <div className="relative h-28 w-28 overflow-hidden rounded-full border-4 border-green-500">
+            <Image
+              src={preview || "/log.png"}
+              alt="Profile"
+              fill
+              className="object-cover"
+            />
+          </div>
+
+          <label className="cursor-pointer rounded-lg bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700">
+            Pilih Foto
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="hidden"
+            />
+          </label>
+        </div>
 
         <Input
           label="Username"

@@ -1,5 +1,3 @@
-
-
 export interface LoginRequest {
   username: string;
   password: string;
@@ -12,24 +10,28 @@ export interface RegisterRequest {
   role: "buyer" | "seller";
 }
 
-export interface UserInfo {
-  id: number;
-  username: string;
-  email: string;
-  role: string;
+
+export interface GoogleLoginRequest {
+  credential: string;
 }
 
-export interface TokenResponse {
-  access: string;
-  refresh: string;
-  user: UserInfo;
+export interface GoogleRegisterRequest {
+  credential: string;
+  role: "buyer" | "seller";
 }
 
 export interface UserProfile {
   id: number;
   username: string;
   email: string;
-  role: string;
+  role: "buyer" | "seller" | "admin";
+  profile_image: string | null;
+}
+
+export interface TokenResponse {
+  access: string;
+  refresh: string;
+  user: UserProfile;
 }
 
 export interface AuthContextType {
@@ -39,4 +41,3 @@ export interface AuthContextType {
   loading: boolean;
   logout: () => void;
 }
-

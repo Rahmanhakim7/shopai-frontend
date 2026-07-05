@@ -8,19 +8,19 @@ import Image from "next/image";
 import Input from "@/components/ui/Input";
 import { ArrowUp, ArrowDown, ArrowUpDown, Loader2 } from "lucide-react";
 import Swal from "sweetalert2";
+import { Product } from "@/types/product";
 import Pagination from "@/components/ui/Pagination";
-import { ProductItem } from "@/types/product";
 import RoleGuard from "@/components/guards/RoleGuard";
 import { useAuth } from "@/context/AuthContext";
+import { getSellerProducts,deleteSellerProduct } from "@/features/products/product.api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function SellerProducts() {
   const router = useRouter();
   const { token, user, loading: authLoading } = useAuth();
   const searchParams = useSearchParams();
-  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalProducts, setTotalProducts] = useState(0);
   const currentPage = Number(searchParams.get("page")) || 1;
@@ -52,25 +52,12 @@ export default function SellerProducts() {
     if (!token) return;
     setLoading(true);
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/seller/products/?page=${currentPage}&search=${search}&status=${status}&ordering=${ordering}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          cache: "no-store",
-        },
-      );
-      if (response.status === 403) {
-        router.replace("/");
-        return;
-      }
-      if (!response.ok) {
-        throw new Error("Failed to fetch products");
-      }
-      const data = await response.json();
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const data = await getSellerProducts({
+        page: currentPage,
+        search,
+        status,
+        ordering,
+      });
       setProducts(data.results.data);
       setTotalProducts(data.count);
     } catch (error) {
@@ -118,15 +105,7 @@ export default function SellerProducts() {
     });
     if (!result.isConfirmed) return;
     try {
-      const response = await fetch(`${API_BASE_URL}/seller/products/${id}/`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Failed to delete product");
-      }
+      await deleteSellerProduct(id);
       await Swal.fire({
         title: "Deleted!",
         text: "Product berhasil dihapus",
@@ -144,7 +123,7 @@ export default function SellerProducts() {
       });
     }
   };
-
+  
   const PAGE_SIZE = 5;
   const totalPages = Math.ceil(totalProducts / PAGE_SIZE);
   const handlePageChange = (page: number) => {
