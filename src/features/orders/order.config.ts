@@ -1,4 +1,4 @@
-import { Clock3, Package, Truck, CircleCheckBig } from "lucide-react";
+import { Clock3, Package, Truck, CircleCheckBig, XCircle } from "lucide-react";
 
 export const sellerStatusConfig = {
   pending: {
@@ -25,6 +25,12 @@ export const sellerStatusConfig = {
     iconClassName: "h-5 w-5",
     badgeClassName: "bg-green-100 text-green-700",
   },
+  cancelled: {
+    text: "Pesanan Dibatalkan",
+    icon: XCircle,
+    iconClassName: "h-5 w-5",
+    badgeClassName: "bg-red-100 text-red-700",
+  },
 } as const;
 
 export const paymentStatusConfig = {
@@ -49,7 +55,7 @@ export const paymentStatusConfig = {
     className: "bg-gray-100 text-gray-700",
   },
   cancelled: {
-    text: "Pesanan Dibatalkan",
+    text: "Pembayaran Dibatalkan",
     color: "bg-red-500",
     className: "bg-red-100 text-red-700",
   },

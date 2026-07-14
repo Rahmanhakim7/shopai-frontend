@@ -102,9 +102,9 @@ export default function OrdersPage() {
                 return (
                   <div
                     key={order.id}
-                    className="flex flex-col gap-6 rounded-2xl bg-white p-5 shadow-sm lg:flex-row lg:justify-between"
+                    className="flex flex-col gap-6 rounded-2xl border border-green-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-green-300 hover:shadow-lg lg:flex-row lg:justify-between"
                   >
-                    <div>
+                    <div className="flex-1">
                       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                         <div>
                           <h2 className="font-bold">Order #{order.id}</h2>
@@ -129,7 +129,7 @@ export default function OrdersPage() {
                       <div className="mt-4 flex flex-wrap gap-1">
                         <Link
                           href={`/orders/${order.id}`}
-                          className="rounded-lg bg-green-600 px-4 py-2 text-white"
+                          className="rounded-lg bg-green-600 px-4 py-1 font-semibold text-white"
                         >
                           Lihat Detail
                         </Link>
@@ -137,7 +137,7 @@ export default function OrdersPage() {
                           <PayButton
                             orderId={order.id}
                             onPaymentSuccess={fetchOrders}
-                            className="min-w-[140px] !bg-green-600 px-4 py-2 !text-white hover:!bg-green-700"
+                            className="min-w-[140px] !bg-green-600 !px-4 !py-1 !text-white hover:!bg-green-700"
                           />
                         )}
                       </div>
