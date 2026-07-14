@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import SellerLayout from "@/layouts/sellerlayouts";
 import Image from "next/image";
@@ -7,6 +6,12 @@ import api from "@/lib/api";
 import { useParams } from "next/navigation";
 import RoleGuard from "@/components/guards/RoleGuard";
 import { useAuth } from "@/context/AuthContext";
+import {
+  processSellerOrder,
+  shipSellerOrder,
+} from "@/features/seller/seller.api";
+import SellerStatusBadge from "@/features/orders/components/SellerStatusBadge";
+import PaymentStatusBadge from "@/features/orders/components/PaymentStatusBadge";
 
 const MEDIA_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -27,6 +32,7 @@ type SellerOrder = {
   status: string;
   subtotal: number;
   created_at: string;
+  payment_status: string;
   items: OrderItem[];
 };
 
@@ -67,40 +73,38 @@ export default function SellerOrderDetailPage() {
       month: "long",
       year: "numeric",
     });
-  const updateStatus = async (status: string) => {
+
+  const handleProcessOrder = async () => {
+    if (!order) return;
     try {
       setUpdating(true);
-      await api.patch(`/seller/orders/${order?.id}/status/`, {
-        status,
+      await processSellerOrder(order.id);
+      setOrder({
+        ...order,
+        status: "processed",
       });
-      setOrder((prev) =>
-        prev
-          ? {
-              ...prev,
-              status,
-            }
-          : prev,
-      );
     } catch (error) {
-      console.error(error);
+      console.error("Failed process order:", error);
     } finally {
       setUpdating(false);
     }
   };
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "processed":
-        return "bg-blue-100 text-blue-700";
-      case "shipped":
-        return "bg-purple-100 text-purple-700";
-      case "completed":
-        return "bg-green-100 text-green-700";
-      default:
-        return "bg-zinc-100 text-zinc-700";
+  const handleShipOrder = async () => {
+    if (!order) return;
+    try {
+      setUpdating(true);
+      await shipSellerOrder(order.id);
+      setOrder({
+        ...order,
+        status: "shipped",
+      });
+    } catch (error) {
+      console.error("Failed ship order:", error);
+    } finally {
+      setUpdating(false);
     }
   };
+
   if (loading) {
     return (
       <RoleGuard role="seller">
@@ -110,6 +114,7 @@ export default function SellerOrderDetailPage() {
       </RoleGuard>
     );
   }
+
   if (!order) {
     return (
       <RoleGuard role="seller">
@@ -119,6 +124,7 @@ export default function SellerOrderDetailPage() {
       </RoleGuard>
     );
   }
+
   return (
     <RoleGuard role="seller">
       <SellerLayout sidebarTitle="Orders">
@@ -126,21 +132,14 @@ export default function SellerOrderDetailPage() {
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold">Seller Order #{order.id}</h1>
-
-              <p className="mt-1 text-zinc-500">Pembeli: {order.buyer_name}</p>
             </div>
-            <span
-              className={`rounded-full px-4 py-2 text-sm font-medium ${getStatusColor(
-                order.status,
-              )}`}
-            >
-              {order.status}
-            </span>
+            <SellerStatusBadge status={order.status} />
           </div>
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2">
+          <div className="grid gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-5">
               <div className="rounded-2xl bg-white p-6 shadow-sm">
                 <h2 className="mb-5 text-lg font-bold">Produk Pesanan</h2>
+
                 <div className="space-y-4">
                   {order.items.map((item) => (
                     <div
@@ -162,55 +161,132 @@ export default function SellerOrderDetailPage() {
                         unoptimized
                       />
                       <div className="flex-1">
-                        <h3 className="font-semibold">{item.product_name}</h3>
-                        <p className="text-sm text-zinc-500">
-                          Qty: {item.quantity}
+                        <h3 className="font-semibold text-zinc-900">
+                          {item.product_name}
+                        </h3>
+                        <p className="mt-1 text-sm text-zinc-500">
+                          Qty : {item.quantity}
                         </p>
                         <p className="text-sm text-zinc-500">
                           {formatCurrency(item.price)}
                         </p>
-                      </div>
-                      <div className="font-bold text-green-600">
-                        {formatCurrency(item.subtotal)}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-            <div>
+            <div className="space-y-6 lg:col-span-7">
               <div className="rounded-2xl bg-white p-6 shadow-sm">
-                <h2 className="mb-4 text-lg font-bold">Informasi Pesanan</h2>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span>Pembeli</span>
-                    <span>{order.buyer_name}</span>
+                <h2 className="mb-6 text-lg font-bold text-zinc-900">
+                  Informasi Pesanan
+                </h2>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+                  <div className="space-y-6">
+                    <div>
+                      <p className="text-sm text-zinc-500">Pembeli</p>
+                      <p className="mt-1 font-semibold text-zinc-900">
+                        {order.buyer_name}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-zinc-500">Status Pembayaran</p>
+
+                      <div className="mt-2">
+                        <PaymentStatusBadge status={order.payment_status} />
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-sm text-zinc-500">Status Pesanan</p>
+                      <div className="mt-2">
+                        <SellerStatusBadge status={order.status} />
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span>Tanggal</span>
-                    <span>{formatDate(order.created_at)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Total</span>
-                    <span className="font-bold text-green-600">
-                      {formatCurrency(order.subtotal)}
-                    </span>
+                  <div className="space-y-6">
+                    <div>
+                      <p className="text-sm text-zinc-500">Tanggal</p>
+                      <p className="mt-1 font-medium text-zinc-900">
+                        {formatDate(order.created_at)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-zinc-500">Total</p>
+                      <p className="mt-1 text-2xl font-bold text-green-600">
+                        {formatCurrency(order.subtotal)}
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <div className="mt-6 border-t pt-6">
-                  <h3 className="mb-3 font-semibold">Update Status</h3>
-                  <select
-                    value={order.status}
-                    disabled={updating}
-                    onChange={(e) => updateStatus(e.target.value)}
-                    className="w-full rounded-xl border p-3"
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="processed">Processed</option>
-                    <option value="shipped">Shipped</option>
-                    <option value="completed">Completed</option>
-                  </select>
-                </div>
+              </div>
+              <div className="rounded-2xl bg-white p-6 shadow-sm">
+                <h2 className="mb-5 text-lg font-bold text-zinc-900">
+                  Aksi Pesanan
+                </h2>
+                {order.payment_status !== "paid" && (
+                  <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+                    <p className="font-semibold text-yellow-700">
+                      Menunggu Pembayaran
+                    </p>
+
+                    <p className="mt-1 text-sm text-yellow-600">
+                      Seller belum dapat memproses pesanan sebelum pembayaran
+                      berhasil.
+                    </p>
+                  </div>
+                )}
+                {order.payment_status === "paid" &&
+                  order.status === "pending" && (
+                    <button
+                      onClick={handleProcessOrder}
+                      disabled={updating}
+                      className="w-full rounded-xl bg-green-600 py-3 font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-green-300"
+                    >
+                      {updating ? "Memproses..." : "Proses Pesanan"}
+                    </button>
+                  )}
+                {order.status === "processed" && (
+                  <div className="space-y-4">
+                    <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+                      <p className="font-semibold text-blue-700">
+                        Pesanan Siap Dikirim
+                      </p>
+                      <p className="mt-1 text-sm text-blue-600">
+                        Produk sudah selesai diproses. Silakan kirim pesanan
+                        kepada pembeli.
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleShipOrder}
+                      disabled={updating}
+                      className="w-full rounded-xl bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                    >
+                      {updating ? "Mengirim..." : "Kirim Pesanan"}
+                    </button>
+                  </div>
+                )}
+                {order.status === "shipped" && (
+                  <div className="rounded-xl border border-purple-200 bg-purple-50 p-4">
+                    <p className="font-semibold text-purple-700">
+                      Pesanan Sedang Dikirim
+                    </p>
+                    <p className="mt-1 text-sm text-purple-600">
+                      Menunggu pembeli mengonfirmasi bahwa pesanan telah
+                      diterima.
+                    </p>
+                  </div>
+                )}
+                {order.status === "completed" && (
+                  <div className="rounded-xl border border-green-200 bg-green-50 p-4">
+                    <p className="font-semibold text-green-700">
+                      Pesanan Selesai
+                    </p>
+                    <p className="mt-1 text-sm text-green-600">
+                      Transaksi telah selesai.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

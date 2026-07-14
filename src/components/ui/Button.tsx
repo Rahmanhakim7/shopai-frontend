@@ -3,7 +3,7 @@ import React from "react";
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   loading?: boolean;
   variant?: "primary" | "secondary" | "danger" | "success" | "ghost";
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "icon";
 };
 export default function Button({
   children,
@@ -26,6 +26,7 @@ export default function Button({
     sm: "py-2 px-3 text-sm",
     md: "py-3 px-4 text-base",
     lg: "py-4 px-5 text-lg",
+    icon: "h-10 w-10 p-0",
   };
   return (
     <button

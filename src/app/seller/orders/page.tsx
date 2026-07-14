@@ -5,6 +5,7 @@ import Link from "next/link";
 import api from "@/lib/api";
 import RoleGuard from "@/components/guards/RoleGuard";
 import { useAuth } from "@/context/AuthContext";
+import SellerStatusBadge from "@/features/orders/components/SellerStatusBadge";
 
 type SellerOrder = {
   id: number;
@@ -54,21 +55,6 @@ export default function SellerOrdersPage() {
       month: "long",
       year: "numeric",
     });
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "processed":
-        return "bg-blue-100 text-blue-700";
-      case "shipped":
-        return "bg-purple-100 text-purple-700";
-      case "completed":
-        return "bg-green-100 text-green-700";
-      default:
-        return "bg-zinc-100 text-zinc-700";
-    }
-  };
 
   return (
     <RoleGuard role="seller">
@@ -200,13 +186,7 @@ export default function SellerOrdersPage() {
                         {formatCurrency(order.subtotal)}
                       </td>
                       <td className="px-6 py-3">
-                        <span
-                          className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(
-                            order.status,
-                          )}`}
-                        >
-                          {order.status}
-                        </span>
+                        <SellerStatusBadge status={order.status} />
                       </td>
                       <td className="px-6 py-3 text-zinc-500">
                         {formatDate(order.created_at)}

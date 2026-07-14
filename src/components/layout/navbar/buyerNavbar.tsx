@@ -25,23 +25,18 @@ type CartResponse = {
 
 export default function BuyerNavbar() {
   const pathname = usePathname();
-
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartCount, setCartCount] = useState(0);
-
   const fetchCounts = async () => {
     try {
       const wishlistResponse = await api.get("/wishlist/");
       setWishlistCount(wishlistResponse.data.length);
-
       const cartResponse = await api.get<CartResponse>("/cart/");
-
       const totalCart = cartResponse.data.seller_groups.reduce(
         (total, seller) =>
           total + seller.items.reduce((sum, item) => sum + item.quantity, 0),
         0,
       );
-
       setCartCount(totalCart);
     } catch (err) {
       console.error("Failed fetch navbar count", err);

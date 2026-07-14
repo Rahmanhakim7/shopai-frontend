@@ -7,6 +7,15 @@ import api from "@/lib/api";
 import { useParams } from "next/navigation";
 import RoleGuard from "@/components/guards/RoleGuard";
 import { useAuth } from "@/context/AuthContext";
+import PayButton from "@/components/payments/PayButton";
+import Script from "next/script";
+import {
+  cancelOrder,
+  completeSellerOrder,
+  getOrder,
+} from "@/features/orders/order.api";
+import SellerStatusBadge from "@/features/orders/components/SellerStatusBadge";
+import PaymentStatusBadge from "@/features/orders/components/PaymentStatusBadge";
 
 const MEDIA_URL = process.env.NEXT_PUBLIC_API_URL;
 type OrderItem = {
@@ -32,27 +41,16 @@ type SellerOrder = {
 type Order = {
   id: number;
   total_amount: number;
+  payment_status: string;
   created_at: string;
   seller_orders: SellerOrder[];
-};
-
-const getStatusStyle = (status: string) => {
-  switch (status) {
-    case "completed":
-      return "bg-green-100 text-green-700";
-    case "shipped":
-      return "bg-blue-100 text-blue-700";
-    case "processed":
-      return "bg-yellow-100 text-yellow-700";
-    default:
-      return "bg-zinc-100 text-zinc-700";
-  }
 };
 
 export default function OrderDetailPage() {
   const params = useParams();
   const orderId = params.id;
   const [order, setOrder] = useState<Order | null>(null);
+  const [completingId, setCompletingId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState<OrderItem | null>(null);
   const [rating, setRating] = useState(0);
@@ -60,19 +58,34 @@ export default function OrderDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const { user, loading: authLoading } = useAuth();
 
+  const fetchOrder = async () => {
+    try {
+      const res = await api.get(`/orders/${orderId}/`);
+      setOrder(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCompleteSellerOrder = async (sellerOrderId: number) => {
+    if (!order) return;
+    try {
+      setCompletingId(sellerOrderId);
+      await completeSellerOrder(sellerOrderId);
+      const updatedOrder = await getOrder(order.id);
+      setOrder(updatedOrder);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setCompletingId(null);
+    }
+  };
+
   useEffect(() => {
     if (authLoading) return;
     if (!user || user.role !== "buyer") return;
-    const fetchOrder = async () => {
-      try {
-        const res = await api.get(`/orders/${orderId}/`);
-        setOrder(res.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
     if (orderId) {
       fetchOrder();
     }
@@ -137,6 +150,19 @@ export default function OrderDetailPage() {
     );
   }
 
+  const handleCancelOrder = async () => {
+    const confirmed = window.confirm("Yakin ingin membatalkan pesanan ini?");
+    if (!confirmed) return;
+    try {
+      await cancelOrder(order!.id);
+      alert("Pesanan berhasil dibatalkan.");
+      await fetchOrder();
+    } catch (error) {
+      console.error(error);
+      alert("Gagal membatalkan pesanan.");
+    }
+  };
+
   return (
     <RoleGuard role="buyer">
       <BuyerLayout>
@@ -155,13 +181,7 @@ export default function OrderDetailPage() {
                     <span className="font-semibold">
                       🏪 {sellerOrder.seller_name}
                     </span>
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusStyle(
-                        sellerOrder.status,
-                      )}`}
-                    >
-                      {sellerOrder.status}
-                    </span>
+                    <SellerStatusBadge status={sellerOrder.status} />
                   </div>
                   <div className="p-4">
                     {sellerOrder.items.map((item) => (
@@ -221,20 +241,40 @@ export default function OrderDetailPage() {
                       <span>Subtotal Seller</span>
                       <span>{formatCurrency(sellerOrder.subtotal)}</span>
                     </div>
+                    {sellerOrder.status === "shipped" && (
+                      <div className="mt-5 border-t pt-5">
+                        <button
+                          onClick={() =>
+                            handleCompleteSellerOrder(sellerOrder.id)
+                          }
+                          disabled={completingId === sellerOrder.id}
+                          className="w-full rounded-xl bg-green-600 px-4 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-50"
+                        >
+                          {completingId === sellerOrder.id
+                            ? "Memproses..."
+                            : "📦 Pesanan Diterima"}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
             <div className="h-fit rounded-2xl bg-white p-5 shadow-sm">
-              <h2 className="mb-4 text-lg font-bold">Informasi Pesanan</h2>
-              <div className="mb-3 flex justify-between">
-                <span>ID Pesanan</span>
-                <span>#{order.id}</span>
+              <h2 className="mb-5 text-lg font-bold">Informasi Pesanan</h2>
+              <div className="mb-4">
+                <p className="text-sm text-gray-500">ID Pesanan</p>
+                <p className="font-semibold">#{order.id}</p>
               </div>
-              <div className="mb-3 flex justify-between">
-                <span>Tanggal</span>
-                <span>{formatDate(order.created_at)}</span>
+              <div className="mb-4">
+                <p className="text-sm text-gray-500">Tanggal</p>
+                <p>{formatDate(order.created_at)}</p>
               </div>
+              <div className="mb-5">
+                <p className="mb-2 text-sm text-gray-500">Status Pembayaran</p>
+                <PaymentStatusBadge status={order.payment_status} />
+              </div>
+              <div className="border-t pt-5"></div>
               <div className="border-t pt-4">
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total Bayar</span>
@@ -242,6 +282,43 @@ export default function OrderDetailPage() {
                     {formatCurrency(order.total_amount)}
                   </span>
                 </div>
+                {order.payment_status === "pending" && (
+                  <div className="mt-5 space-y-3">
+                    <Script
+                      src="https://app.sandbox.midtrans.com/snap/snap.js"
+                      data-client-key={
+                        process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY
+                      }
+                      strategy="afterInteractive"
+                    />
+
+                    <PayButton
+                      orderId={order.id}
+                      onPaymentSuccess={fetchOrder}
+                    />
+
+                    <button
+                      className="w-full rounded-xl border border-red-500 py-3 font-medium text-red-600 transition hover:bg-red-50"
+                      onClick={handleCancelOrder}
+                    >
+                      Batalkan Pesanan
+                    </button>
+                  </div>
+                )}
+                {order.payment_status === "paid" && (
+                  <div className="mt-5 rounded-xl bg-green-50 p-4 text-center">
+                    <p className="font-semibold text-green-700">
+                      Pembayaran berhasil.
+                    </p>
+                  </div>
+                )}
+                {order.payment_status === "cancelled" && (
+                  <div className="mt-5 rounded-xl bg-red-50 p-4 text-center">
+                    <p className="font-semibold text-red-700">
+                      Pesanan telah dibatalkan.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

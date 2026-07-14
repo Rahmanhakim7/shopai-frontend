@@ -5,6 +5,10 @@ import Link from "next/link";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import RoleGuard from "@/components/guards/RoleGuard";
+import PaymentStatusBadge from "@/features/orders/components/PaymentStatusBadge";
+import SellerStatusBadge from "@/features/orders/components/SellerStatusBadge";
+import PayButton from "@/components/payments/PayButton";
+import Script from "next/script";
 
 type OrderItem = {
   id: number;
@@ -27,6 +31,7 @@ type SellerOrder = {
 type Order = {
   id: number;
   total_amount: number;
+  payment_status: string;
   created_at: string;
   seller_orders: SellerOrder[];
 };
@@ -36,21 +41,23 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
 
+  const fetchOrders = async () => {
+    try {
+      const res = await api.get("/orders/");
+      setOrders(res.data.results ?? res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (authLoading) return;
     if (!user || user.role !== "buyer") return;
-    const fetchOrders = async () => {
-      try {
-        const res = await api.get("/orders/");
-        setOrders(res.data.results ?? res.data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+
     fetchOrders();
-  }, []);
+  }, [authLoading, user]);
 
   const formatCurrency = (n: number) =>
     new Intl.NumberFormat("id-ID", {
@@ -78,6 +85,11 @@ export default function OrdersPage() {
   return (
     <RoleGuard role="buyer">
       <BuyerLayout>
+        <Script
+          src="https://app.sandbox.midtrans.com/snap/snap.js"
+          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+          strategy="afterInteractive"
+        />
         <div className="min-h-screen bg-gray-50 p-6">
           <h1 className="mb-6 text-2xl font-bold">Pesanan Saya</h1>
           {orders.length === 0 ? (
@@ -85,50 +97,69 @@ export default function OrdersPage() {
               Belum ada pesanan
             </div>
           ) : (
-            <div className="space-y-4">
-              {orders.map((order) => (
-                <div
-                  key={order.id}
-                  className="rounded-2xl bg-white p-5 shadow-sm"
-                >
-                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              {orders.map((order) => {
+                return (
+                  <div
+                    key={order.id}
+                    className="flex flex-col gap-6 rounded-2xl bg-white p-5 shadow-sm lg:flex-row lg:justify-between"
+                  >
                     <div>
-                      <h2 className="font-bold">Order #{order.id}</h2>
-                      <p className="text-sm text-gray-500">
-                        {formatDate(order.created_at)}
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {order.seller_orders.map((sellerOrder) => (
-                        <span
-                          key={sellerOrder.id}
-                          className="rounded-full bg-yellow-100 px-3 py-1 text-sm font-medium text-yellow-700"
+                      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <h2 className="font-bold">Order #{order.id}</h2>
+                          <p className="text-sm text-gray-500">
+                            {formatDate(order.created_at)}
+                          </p>
+                          <div className="mt-2">
+                            <PaymentStatusBadge status={order.payment_status} />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mt-4 text-sm text-gray-600">
+                        {order.seller_orders.reduce(
+                          (acc, seller) => acc + seller.items.length,
+                          0,
+                        )}{" "}
+                        produk
+                      </div>
+                      <div className="mt-2 text-lg font-bold text-green-600">
+                        {formatCurrency(order.total_amount)}
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-1">
+                        <Link
+                          href={`/orders/${order.id}`}
+                          className="rounded-lg bg-green-600 px-4 py-2 text-white"
                         >
-                          {sellerOrder.seller_name}:{sellerOrder.status}
-                        </span>
+                          Lihat Detail
+                        </Link>
+                        {order.payment_status === "pending" && (
+                          <PayButton
+                            orderId={order.id}
+                            onPaymentSuccess={fetchOrders}
+                            className="min-w-[140px] !bg-green-600 px-4 py-2 !text-white hover:!bg-green-700"
+                          />
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col flex-wrap gap-2">
+                      {order.seller_orders.map((sellerOrder) => (
+                        <div
+                          key={sellerOrder.id}
+                          className="rounded-lg border border-zinc-200 p-3"
+                        >
+                          <p className="text-sm font-semibold text-zinc-900">
+                            {sellerOrder.seller_name}
+                          </p>
+                          <div className="mt-2">
+                            <SellerStatusBadge status={sellerOrder.status} />
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>
-                  <div className="mt-4 text-sm text-gray-600">
-                    {order.seller_orders.reduce(
-                      (acc, seller) => acc + seller.items.length,
-                      0,
-                    )}{" "}
-                    produk
-                  </div>
-                  <div className="mt-2 text-lg font-bold text-green-600">
-                    {formatCurrency(order.total_amount)}
-                  </div>
-                  <div className="mt-4">
-                    <Link
-                      href={`/orders/${order.id}`}
-                      className="rounded-lg bg-green-600 px-4 py-2 text-white"
-                    >
-                      Lihat Detail
-                    </Link>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
