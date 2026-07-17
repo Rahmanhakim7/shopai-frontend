@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingCart, Heart } from "lucide-react";
+import { ShoppingCart, Heart, Bell } from "lucide-react";
 import ProfileDropdown from "@/components/layout/profiledropdown";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import NotificationDropdown from "@/features/notifications/components/NotificationDropdown";
+import type { Notification } from "@/features/notifications/notifications.types";
+import { getNotifications } from "@/features/notifications/notifications.api";
 import api from "@/lib/api";
 
 type CartItem = {
@@ -27,10 +30,14 @@ export default function BuyerNavbar() {
   const pathname = usePathname();
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartCount, setCartCount] = useState(0);
+  const [openNotification, setOpenNotification] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const fetchCounts = async () => {
     try {
       const wishlistResponse = await api.get("/wishlist/");
       setWishlistCount(wishlistResponse.data.length);
+      const notificationResponse = await getNotifications();
       const cartResponse = await api.get<CartResponse>("/cart/");
       const totalCart = cartResponse.data.seller_groups.reduce(
         (total, seller) =>
@@ -38,6 +45,8 @@ export default function BuyerNavbar() {
         0,
       );
       setCartCount(totalCart);
+      setNotifications(notificationResponse.notifications);
+      setUnreadCount(notificationResponse.unread_count);
     } catch (err) {
       console.error("Failed fetch navbar count", err);
     }
@@ -105,27 +114,37 @@ export default function BuyerNavbar() {
             className="relative rounded-xl p-2.5 transition-all duration-200 hover:scale-105 hover:bg-green-50"
           >
             <ShoppingCart size={22} className="text-zinc-700" />
-
             {cartCount > 0 && (
               <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-green-600 text-[10px] font-bold text-white shadow">
                 {cartCount}
               </span>
             )}
           </Link>
-
           <Link
             href="/wishlist"
             className="relative rounded-xl p-2.5 transition-all duration-200 hover:scale-105 hover:bg-red-50"
           >
             <Heart size={22} className="text-zinc-700" />
-
             {wishlistCount > 0 && (
               <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white shadow">
                 {wishlistCount}
               </span>
             )}
           </Link>
-
+          <div className="relative">
+            <button
+              onClick={() => setOpenNotification(!openNotification)}
+              className="cursor-pointer relative rounded-xl p-2.5 transition-all duration-200 hover:scale-105 hover:bg-green-50"
+            >
+              <Bell size={22} className="text-zinc-700" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+            {openNotification && <NotificationDropdown notifications={notifications} />}
+          </div>
           <div className="ml-1">
             <ProfileDropdown />
           </div>
