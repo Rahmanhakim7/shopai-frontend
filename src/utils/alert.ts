@@ -1,12 +1,5 @@
-import Swal from "sweetalert2";
-
-export const showError = (message: string) =>
-  Swal.fire({
-    icon: "error",
-    title: "Oops...",
-    text: message,
-    confirmButtonColor: "#16a34a",
-  });
+import Swal, { SweetAlertResult } from "sweetalert2";
+const confirmButtonColor = "#16a34a";
 
 export const showSuccess = (message: string) =>
   Swal.fire({
@@ -14,8 +7,16 @@ export const showSuccess = (message: string) =>
     title: "Berhasil",
     text: message,
     timer: 2000,
-    confirmButtonColor: "#16a34a",
     showConfirmButton: false,
+    confirmButtonColor,
+  });
+
+export const showError = (message: string) =>
+  Swal.fire({
+    icon: "error",
+    title: "Oops...",
+    text: message,
+    confirmButtonColor,
   });
 
 export const showWarning = (message: string) =>
@@ -23,5 +24,20 @@ export const showWarning = (message: string) =>
     icon: "warning",
     title: "Perhatian",
     text: message,
-    confirmButtonColor: "#16a34a",
+    confirmButtonColor,
+  });
+
+export const showConfirm = (
+  title: string,
+  message: string,
+): Promise<SweetAlertResult> =>
+  Swal.fire({
+    title,
+    text: message,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor,
+    cancelButtonColor: "#ef4444",
+    confirmButtonText: "Ya",
+    cancelButtonText: "Batal",
   });

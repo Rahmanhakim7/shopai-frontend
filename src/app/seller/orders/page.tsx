@@ -1,73 +1,18 @@
 "use client";
-import { useEffect, useState } from "react";
 import SellerLayout from "@/layouts/sellerlayouts";
-import Link from "next/link";
-import api from "@/lib/api";
 import RoleGuard from "@/components/guards/RoleGuard";
-import { useAuth } from "@/context/AuthContext";
-import SellerStatusBadge from "@/features/orders/components/SellerStatusBadge";
-
-type SellerOrder = {
-  id: number;
-  buyer_name: string;
-  seller_name: string;
-  status: string;
-  subtotal: number;
-  created_at: string;
-  items: {
-    id: number;
-    quantity: number;
-  }[];
-};
+import { useSellerOrders } from "@/features/orders/hooks/useSellerOrders";
+import EmptyState from "@/components/ui/EmptyState";
+import SellerOrderTable from "@/features/orders/components/SellerOrderTable";
 
 export default function SellerOrdersPage() {
-  const [orders, setOrders] = useState<SellerOrder[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { user, loading: authLoading } = useAuth();
-
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user || user.role !== "seller") {
-      return;
-    }
-    const fetchOrders = async () => {
-      try {
-        const res = await api.get("/seller/orders/");
-        setOrders(res.data.results ?? res.data);
-      } catch (error) {
-        console.error("Failed fetch seller orders:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchOrders();
-  }, []);
-
-  const formatCurrency = (value: number) =>
-    new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-    }).format(value);
-
-  const formatDate = (date: string) =>
-    new Date(date).toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-
+  const { orders, loading } = useSellerOrders();
   return (
     <RoleGuard role="seller">
       <SellerLayout sidebarTitle="Orders">
         <div className="min-h-screen bg-zinc-50 p-6">
           <div className="mb-8">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-zinc-900">Pesanan</h1>
-                <p className="mt-1 text-zinc-500">
-                  Pantau dan kelola seluruh transaksi pelanggan.
-                </p>
-              </div>
               {!loading && (
                 <div className="rounded-xl border border-green-100 bg-green-50 px-5 py-3">
                   <p className="text-xs font-semibold tracking-wider text-green-600 uppercase">
@@ -79,34 +24,6 @@ export default function SellerOrdersPage() {
                 </div>
               )}
             </div>
-            {!loading && orders.length > 0 && (
-              <div className="mt-6 grid gap-4 md:grid-cols-3">
-                <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-                  <p className="text-sm text-zinc-500">Total Pesanan</p>
-                  <p className="mt-2 text-3xl font-bold text-zinc-900">
-                    {orders.length}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-5 shadow-sm">
-                  <p className="text-sm text-yellow-700">Menunggu Diproses</p>
-                  <p className="mt-2 text-3xl font-bold text-yellow-700">
-                    {
-                      orders.filter((order) => order.status === "pending")
-                        .length
-                    }
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-green-200 bg-green-50 p-5 shadow-sm">
-                  <p className="text-sm text-green-700">Pesanan Selesai</p>
-                  <p className="mt-2 text-3xl font-bold text-green-700">
-                    {
-                      orders.filter((order) => order.status === "completed")
-                        .length
-                    }
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
           {loading ? (
             <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
@@ -131,79 +48,13 @@ export default function SellerOrdersPage() {
               </div>
             </div>
           ) : orders.length === 0 ? (
-            <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100">
-                📦
-              </div>
-              <h3 className="text-lg font-semibold text-zinc-900">
-                Belum Ada Pesanan
-              </h3>
-              <p className="mt-2 text-zinc-500">
-                Pesanan dari pelanggan akan muncul di sini.
-              </p>
-            </div>
+            <EmptyState
+              icon={<span>📦</span>}
+              title="Belum Ada Pesanan"
+              description="Pesanan dari pelanggan akan muncul di sini."
+            />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead>
-                  <tr className="border-b border-zinc-100">
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-zinc-600">
-                      Order
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-zinc-600">
-                      Pembeli
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-zinc-600">
-                      Produk
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-zinc-600">
-                      Total
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-zinc-600">
-                      Status
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-zinc-600">
-                      Tanggal
-                    </th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold text-zinc-600">
-                      Aksi
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((order) => (
-                    <tr key={order.id} className="transition hover:bg-zinc-50">
-                      <td className="px-6 py-3 font-semibold text-zinc-900">
-                        #{order.id}
-                      </td>
-                      <td className="px-6 py-3 text-zinc-700">
-                        {order.buyer_name}
-                      </td>
-                      <td className="px-6 py-3 text-zinc-700">
-                        {order.items.length} Produk
-                      </td>
-                      <td className="px-6 py-3 font-semibold text-green-600">
-                        {formatCurrency(order.subtotal)}
-                      </td>
-                      <td className="px-6 py-3">
-                        <SellerStatusBadge status={order.status} />
-                      </td>
-                      <td className="px-6 py-3 text-zinc-500">
-                        {formatDate(order.created_at)}
-                      </td>
-                      <td className="px-6 py-3 text-center">
-                        <Link
-                          href={`/seller/orders/${order.id}`}
-                          className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-green-700"
-                        >
-                          Detail
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+              <SellerOrderTable orders={orders} />
           )}
         </div>
       </SellerLayout>

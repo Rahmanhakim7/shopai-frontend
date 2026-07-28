@@ -7,6 +7,7 @@ import { Heart } from "lucide-react";
 import { ProductItem } from "@/types/product";
 import Button from "@/components/ui/Button";
 import api from "@/lib/api";
+import StockBadge from "@/features/products/components/ProductStockBadge";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -87,16 +88,13 @@ export default function ProductCardList({
         <h2 className="text-base font-semibold text-gray-800">
           {product.name}
         </h2>
-
         <p className="mt-1 text-sm text-gray-500">{product.seller_name}</p>
-
         <p className="mt-2 text-lg font-bold text-green-600">
           Rp {product.price.toLocaleString()}
         </p>
-
-        <span className="mt-2 inline-block text-xs text-gray-500">
-          Stock: {product.stock}
-        </span>
+        <div>
+          <StockBadge stock={product.stock} />
+        </div>
       </div>
       <div className="flex flex-col gap-2">
         <Button
@@ -109,11 +107,9 @@ export default function ProductCardList({
         >
           Detail
         </Button>
-
         <Button variant="success" size="sm" onClick={handleAddToCart}>
           Cart
         </Button>
-
         <Button
           variant={isFavorite ? "danger" : "secondary"}
           size="sm"

@@ -6,17 +6,10 @@ import Image from "next/image";
 import Button from "@/components/ui/Button";
 import BuyerLayout from "@/layouts/buyerlayouts";
 import { useRouter } from "next/navigation";
-
-type Product = {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  stock: number;
-  status: string;
-  image?: string;
-  seller_name?: string;
-};
+import { Product } from "@/types/product";
+import ProductStatusBadge from "@/features/products/components/ProductStatusBadge";
+import ProductConditionBadge from "@/features/products/components/ProductConditionBadge";
+import StockBadge from "@/features/products/components/ProductStockBadge";
 
 type CheckoutItem = {
   product_id: number;
@@ -179,17 +172,16 @@ export default function ProductDetailPage() {
                     Rp {product.price.toLocaleString()}
                   </p>
                   <div className="flex items-center gap-3">
+                    <div>
+                      <StockBadge stock={product.stock} />
+                    </div>
                     <span className="text-sm text-gray-500">
-                      Stock: {product.stock}
+                      Status :
+                      <ProductStatusBadge status={product.status} />
                     </span>
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-medium ${
-                        product.status === "active"
-                          ? "bg-emerald-100 text-emerald-600"
-                          : "bg-gray-100 text-gray-500"
-                      }`}
-                    >
-                      {product.status}
+                    <span className="text-sm text-gray-500">
+                      Kondisi :
+                      <ProductConditionBadge condition={product.condition} />
                     </span>
                   </div>
                 </div>

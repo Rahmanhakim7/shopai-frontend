@@ -2,7 +2,6 @@
 
 import SellerLayout from "@/layouts/sellerlayouts";
 import RoleGuard from "@/components/guards/RoleGuard";
-
 import NotificationPageContent from "@/features/notifications/components/NotificationPageContent";
 
 export default function SellerNotificationsPage() {

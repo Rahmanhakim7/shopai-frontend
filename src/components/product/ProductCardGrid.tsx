@@ -1,12 +1,11 @@
 "use client";
-
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Heart } from "lucide-react";
-
 import { ProductItem } from "@/types/product";
 import Button from "@/components/ui/Button";
 import api from "@/lib/api";
+import StockBadge from "@/features/products/components/ProductStockBadge";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -106,14 +105,8 @@ export default function ProductCardGrid({
         <p className="mt-3 text-xl font-bold text-green-600">
           Rp {product.price.toLocaleString()}
         </p>
-        <span
-          className={`mt-2 inline-flex w-fit rounded-full px-2 py-1 text-xs ${
-            product.stock > 10
-              ? "bg-green-100 text-green-700"
-              : "bg-orange-100 text-orange-700"
-          }`}
-        >
-          Stock {product.stock}
+        <span className="mt-2 inline-flex w-fit rounded-full py-1 text-xs">
+          <StockBadge stock={product.stock} />
         </span>
 
         <div className="mt-4 flex w-full gap-2">
@@ -123,7 +116,7 @@ export default function ProductCardGrid({
             className="flex-1"
             onClick={handleAddToCart}
           >
-            + Cart
+            Keranjang
           </Button>
 
           <Button

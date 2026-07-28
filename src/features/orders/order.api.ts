@@ -1,4 +1,14 @@
 import api from "@/lib/api";
+import type { SellerOrder } from "./order.types";
+
+export const getSellerOrders = async (): Promise<SellerOrder[]> => {
+  const res = await api.get("/seller/orders/");
+  return res.data.results ?? res.data;
+};
+
+
+
+
 
 export async function getOrder(id: number) {
   const res = await api.get(`/orders/${id}/`);
