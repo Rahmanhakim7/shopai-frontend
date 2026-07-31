@@ -1,5 +1,6 @@
 import api from "@/lib/api";
-import { Product } from "@/types/product";
+import { Product} from "@/types/product";
+import { ProductQueryParams } from "./types/product";
 
 interface ProductResponse {
   message: string;
@@ -53,4 +54,33 @@ export const createSellerProduct = async (
 
 export const deleteSellerProduct = async (id: number): Promise<void> => {
   await api.delete(`/seller/products/${id}/`);
+};
+
+
+
+
+export const getProducts = async (params: ProductQueryParams) => {
+  const query = new URLSearchParams();
+  if (params.page) {
+    query.set("page", String(params.page));
+  }
+  if (params.search) {
+    query.set("search", params.search);
+  }
+  if (params.ordering) {
+    query.set("ordering", params.ordering);
+  }
+  if (params.stock_filter) {
+    query.set("stock_filter", params.stock_filter);
+  }
+  if (params.condition) {
+    query.set("condition", params.condition);
+  }
+  const response = await api.get(`/products?${query.toString()}`);
+  return response.data.data;
+};
+
+export const getWishlist = async () => {
+  const response = await api.get("/wishlist/");
+  return response.data;
 };

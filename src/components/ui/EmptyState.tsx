@@ -1,7 +1,7 @@
 type EmptyStateProps = {
   icon?: React.ReactNode;
   title: string;
-  description?: string;
+  description?: React.ReactNode;
   action?: React.ReactNode;
 };
 
@@ -12,15 +12,17 @@ export default function EmptyState({
   action,
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-20">
-      {icon && <div className="mb-4 text-5xl">{icon}</div>}
+    <div className="flex min-h-[350px] flex-col items-center justify-center px-6 text-center">
+      {icon && (
+        <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
+          {icon}
+        </div>
+      )}
 
-      <h3 className="text-xl font-bold text-zinc-700">
-        {title}
-      </h3>
+      <h3 className="text-lg font-semibold text-zinc-800">{title}</h3>
 
       {description && (
-        <p className="mt-2 text-zinc-500 text-center">
+        <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-500">
           {description}
         </p>
       )}

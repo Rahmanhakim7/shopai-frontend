@@ -10,3 +10,4 @@ export const productConditionConfig = {
 } as const;
 
 export type ProductCondition = keyof typeof productConditionConfig;
+export type ProductConditionFilter = ProductCondition | "";

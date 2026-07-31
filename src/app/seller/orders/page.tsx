@@ -1,60 +1,60 @@
 "use client";
+
 import SellerLayout from "@/layouts/sellerlayouts";
 import RoleGuard from "@/components/guards/RoleGuard";
-import { useSellerOrders } from "@/features/orders/hooks/useSellerOrders";
 import EmptyState from "@/components/ui/EmptyState";
+import FullScreenLoader from "@/components/ui/FullScreenLoader";
+import Pagination from "@/components/ui/Pagination";
 import SellerOrderTable from "@/features/orders/components/SellerOrderTable";
+import { useSellerOrders } from "@/features/orders/hooks/useSellerOrders";
 
 export default function SellerOrdersPage() {
-  const { orders, loading } = useSellerOrders();
+  const { orders, loading, currentPage, setCurrentPage, totalPages, totalOrders } = useSellerOrders();
   return (
     <RoleGuard role="seller">
-      <SellerLayout sidebarTitle="Orders">
+      <SellerLayout sidebarTitle="Pesanan">
         <div className="min-h-screen bg-zinc-50 p-6">
-          <div className="mb-8">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              {!loading && (
-                <div className="rounded-xl border border-green-100 bg-green-50 px-5 py-3">
-                  <p className="text-xs font-semibold tracking-wider text-green-600 uppercase">
-                    Total Pesanan
-                  </p>
-                  <p className="text-2xl font-bold text-green-700">
-                    {orders.length}
-                  </p>
-                </div>
-              )}
+          <div className="mb-4 flex justify-end">
+            <div className="rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 px-6 py-4 text-white shadow-lg shadow-green-200/50">
+              <p className="text-xs font-semibold tracking-widest text-green-100 uppercase">
+                Total Pesanan
+              </p>
+              <p className="mt-1 text-center text-3xl font-bold">
+                {loading ? "-" : totalOrders}
+              </p>
             </div>
           </div>
+
           {loading ? (
-            <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
-              <div className="animate-pulse">
-                <div className="border-b p-5">
-                  <div className="h-5 w-48 rounded bg-zinc-200" />
-                </div>
-                {[...Array(6)].map((_, index) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-7 gap-4 border-b px-6 py-5"
-                  >
-                    <div className="h-4 rounded bg-zinc-200" />
-                    <div className="h-4 rounded bg-zinc-200" />
-                    <div className="h-4 rounded bg-zinc-200" />
-                    <div className="h-4 rounded bg-zinc-200" />
-                    <div className="h-4 rounded bg-zinc-200" />
-                    <div className="h-4 rounded bg-zinc-200" />
-                    <div className="h-4 rounded bg-zinc-200" />
-                  </div>
-                ))}
-              </div>
-            </div>
+            <FullScreenLoader text="Memuat pesanan..." fullScreen={false} />
           ) : orders.length === 0 ? (
-            <EmptyState
-              icon={<span>📦</span>}
-              title="Belum Ada Pesanan"
-              description="Pesanan dari pelanggan akan muncul di sini."
-            />
+            <div className="rounded-2xl bg-white shadow-sm">
+              <EmptyState
+                icon={<span>📦</span>}
+                title="Belum Ada Pesanan"
+                description="Pesanan dari pelanggan akan muncul di sini."
+              />
+            </div>
           ) : (
+            <>
               <SellerOrderTable orders={orders} />
+              <div className="mt-4 flex items-center justify-between">
+                <p className="text-sm text-zinc-600">
+                  Total Pesanan :
+                  <span className="font-semibold text-green-600">
+                    {" "}
+                    {totalOrders}
+                  </span>
+                </p>
+                {totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                )}
+              </div>
+            </>
           )}
         </div>
       </SellerLayout>
