@@ -1,6 +1,7 @@
 import api from "@/lib/api";
-import { Product} from "@/types/product";
+import { Product } from "@/types/product";
 import { ProductQueryParams } from "./types/product";
+import { PRODUCT_REVIEW_PAGE_SIZE } from "./constants/paginations";
 
 interface ProductResponse {
   message: string;
@@ -56,9 +57,6 @@ export const deleteSellerProduct = async (id: number): Promise<void> => {
   await api.delete(`/seller/products/${id}/`);
 };
 
-
-
-
 export const getProducts = async (params: ProductQueryParams) => {
   const query = new URLSearchParams();
   if (params.page) {
@@ -80,7 +78,14 @@ export const getProducts = async (params: ProductQueryParams) => {
   return response.data.data;
 };
 
-export const getWishlist = async () => {
-  const response = await api.get("/wishlist/");
+export const getProductDetail = async (id: number) => {
+  const response = await api.get(`/products/${id}/`);
+  return response.data.data;
+};
+
+export const getProductReviews = async (id: number, page = 1) => {
+  const response = await api.get(
+    `/reviews/product/${id}/?page=${page}&page_size=${PRODUCT_REVIEW_PAGE_SIZE}`,
+  );
   return response.data;
 };

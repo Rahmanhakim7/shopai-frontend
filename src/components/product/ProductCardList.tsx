@@ -2,54 +2,26 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Heart } from "lucide-react";
-
-import { ProductItem } from "@/types/product";
+import { Product } from "@/features/products/types/product";
 import Button from "@/components/ui/Button";
 import api from "@/lib/api";
 import StockBadge from "@/features/products/components/ProductStockBadge";
-
+import { Heart } from "lucide-react";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 type Props = {
-  product: ProductItem;
-  wishlistSet: Set<number>;
-  refreshWishlist: () => Promise<void>;
+  product: Product;
+  onToggleWishlist: (productId: number) => void;
 };
 
-export default function ProductCardList({
-  product,
-  wishlistSet,
-  refreshWishlist,
-}: Props) {
+export default function ProductCardList({ product, onToggleWishlist }: Props) {
   const router = useRouter();
-
-  const isFavorite = wishlistSet.has(product.id);
-
   const imageUrl =
     product.image && product.image.startsWith("http")
       ? product.image
       : product.image
         ? `${API_URL}${product.image}`
         : null;
-
-  const toggleFavorite = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    try {
-      if (isFavorite) {
-        await api.delete(`/wishlist/${product.id}/`);
-      } else {
-        await api.post("/wishlist/add/", {
-          product_id: product.id,
-        });
-      }
-
-      await refreshWishlist();
-    } catch (err) {
-      console.error("Wishlist error", err);
-    }
-  };
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -83,6 +55,22 @@ export default function ProductCardList({
             No Image
           </div>
         )}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleWishlist(product.id);
+          }}
+          className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow transition hover:scale-110"
+        >
+          <Heart
+            size={16}
+            className={
+              product.is_wishlisted
+                ? "fill-red-500 text-red-500"
+                : "text-zinc-500"
+            }
+          />
+        </button>
       </div>
       <div className="flex-1">
         <h2 className="text-base font-semibold text-gray-800">
@@ -109,16 +97,6 @@ export default function ProductCardList({
         </Button>
         <Button variant="success" size="sm" onClick={handleAddToCart}>
           Cart
-        </Button>
-        <Button
-          variant={isFavorite ? "danger" : "secondary"}
-          size="sm"
-          onClick={toggleFavorite}
-        >
-          <span className="flex items-center gap-2">
-            <Heart size={16} className={isFavorite ? "fill-white" : ""} />
-            Favorite
-          </span>
         </Button>
       </div>
     </div>

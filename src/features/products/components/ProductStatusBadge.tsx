@@ -10,6 +10,8 @@ interface ProductStatusBadgeProps {
 export default function ProductStatusBadge({
   status,
 }: ProductStatusBadgeProps) {
+  console.log("status =", status);
+  console.log("config =", productStatusConfig[status]);
   const config = productStatusConfig[status];
 
   return (

@@ -1,5 +1,6 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-export const getImageUrl = (image?: string): string => {
+
+export const getImageUrl = (image?: string | null): string => {
   if (!image) {
     return "/images/no-image.png";
   }

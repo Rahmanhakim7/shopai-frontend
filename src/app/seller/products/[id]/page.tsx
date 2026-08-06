@@ -5,7 +5,7 @@ import RoleGuard from "@/components/guards/RoleGuard";
 import Loader from "@/components/ui/Loader";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
-import { useProductDetail } from "@/features/products/hooks/useProductDetail";
+import { useProductDetail } from "@/features/products/hooks/useSellerProductDetail";
 import ProductDetailCard from "@/features/products/components/ProductDetailCard";
 import EmptyState from "@/components/ui/EmptyState";
 

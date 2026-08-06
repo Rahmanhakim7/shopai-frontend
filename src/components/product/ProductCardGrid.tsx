@@ -1,49 +1,27 @@
 "use client";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Heart } from "lucide-react";
-import { ProductItem } from "@/types/product";
+import { Product } from "@/features/products/types/product";
 import Button from "@/components/ui/Button";
 import api from "@/lib/api";
 import StockBadge from "@/features/products/components/ProductStockBadge";
+import { Heart } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 type Props = {
-  product: ProductItem;
-  wishlistSet: Set<number>;
-  refreshWishlist: () => Promise<void>;
+  product: Product;
+  onToggleWishlist: (productId: number) => void;
 };
 
-export default function ProductCardGrid({
-  product,
-  wishlistSet,
-  refreshWishlist,
-}: Props) {
+export default function ProductCardGrid({ product, onToggleWishlist }: Props) {
   const router = useRouter();
-  const isWishlisted = wishlistSet.has(product.id);
   const imageUrl =
     product.image && product.image.startsWith("http")
       ? product.image
       : product.image
         ? `${API_URL}${product.image}`
         : null;
-
-  const toggleWishlist = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      if (isWishlisted) {
-        await api.delete(`/wishlist/${product.id}/`);
-      } else {
-        await api.post("/wishlist/add/", {
-          product_id: product.id,
-        });
-      }
-      await refreshWishlist();
-    } catch (err) {
-      console.error("Wishlist error", err);
-    }
-  };
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -67,13 +45,18 @@ export default function ProductCardGrid({
           {product.seller_name}
         </div>
         <button
-          onClick={toggleWishlist}
-          className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleWishlist(product.id);
+          }}
+          className="absolute top-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur transition hover:scale-110"
         >
           <Heart
-            size={16}
+            size={18}
             className={
-              isWishlisted ? "fill-red-500 text-red-500" : "text-gray-500"
+              product.is_wishlisted
+                ? "fill-red-500 text-red-500"
+                : "text-zinc-500"
             }
           />
         </button>

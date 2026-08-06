@@ -23,64 +23,73 @@ export default function ProductFilters({
   onReset,
 }: ProductFiltersProps) {
   return (
-    <aside className="hidden h-fit w-72 space-y-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-black/5 lg:block">
-      <div>
-        <h2 className="text-base font-semibold text-gray-900">Filter Produk</h2>
-        <p className="mt-1 text-xs text-gray-500">
+    <aside className="hidden h-fit w-72 overflow-hidden rounded-3xl border border-green-100 bg-white shadow-sm lg:block">
+      <div className="bg-gradient-to-r from-emerald-500 to-green-600 px-6 py-4">
+        <h2 className="text-base font-semibold text-white">Filter Produk</h2>
+        <p className="mt-1 text-xs text-green-100">
           Filter produk sesuai kebutuhanmu
         </p>
       </div>
-      <div className="space-y-3 border-t pt-4">
-        <h3 className="text-sm font-semibold text-gray-800">Ketersediaan</h3>
-        <div className="flex items-center gap-2 leading-none">
-          <Input
-            type="checkbox"
-            variant="checkbox"
-            checked={inStock}
-            onChange={onToggleInStock}
-          />
-          <span className="text-sm text-gray-600">Stok Tersedia</span>
+
+      <div className="space-y-6 p-6">
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-gray-800">Ketersediaan</h3>
+
+          <label className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 transition hover:bg-green-50">
+            <Input
+              type="checkbox"
+              variant="checkbox"
+              checked={inStock}
+              onChange={onToggleInStock}
+            />
+            <span className="text-sm text-gray-700">Stok Tersedia</span>
+          </label>
+
+          <label className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 transition hover:bg-green-50">
+            <Input
+              type="checkbox"
+              variant="checkbox"
+              checked={outOfStock}
+              onChange={onToggleOutOfStock}
+            />
+            <span className="text-sm text-gray-700">Stok Habis</span>
+          </label>
         </div>
-        <div className="flex items-center gap-2 leading-none">
-          <Input
-            type="checkbox"
-            variant="checkbox"
-            checked={outOfStock}
-            onChange={onToggleOutOfStock}
-          />
-          <span className="text-sm text-gray-600">Stok Habis</span>
+
+        <div className="border-t border-gray-100 pt-5">
+          <h3 className="mb-3 text-sm font-semibold text-gray-800">Kondisi</h3>
+
+          <label className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 transition hover:bg-green-50">
+            <Input
+              type="radio"
+              variant="radio"
+              checked={condition === "new"}
+              onChange={() => onConditionChange("new")}
+            />
+            <span className="text-sm text-gray-700">Baru</span>
+          </label>
+
+          <label className="mt-2 flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 transition hover:bg-green-50">
+            <Input
+              type="radio"
+              variant="radio"
+              checked={condition === "used"}
+              onChange={() => onConditionChange("used")}
+            />
+            <span className="text-sm text-gray-700">Bekas</span>
+          </label>
         </div>
-      </div>
-      <div className="space-y-3 border-t pt-4">
-        <h3 className="text-sm font-semibold text-gray-800">Kondisi</h3>
-        <div className="flex items-center gap-2 leading-none">
-          <Input
-            type="radio"
-            variant="radio"
-            checked={condition === "new"}
-            onChange={() => onConditionChange("new")}
-          />
-          <span className="text-sm text-gray-600">Baru</span>
+
+        <div className="border-t border-gray-100 pt-5">
+          <Button
+            variant="success"
+            size="sm"
+            className="w-full"
+            onClick={onReset}
+          >
+            Reset Filter
+          </Button>
         </div>
-        <div className="flex items-center gap-2 leading-none">
-          <Input
-            type="radio"
-            variant="radio"
-            checked={condition === "used"}
-            onChange={() => onConditionChange("used")}
-          />
-          <span className="text-sm text-gray-600">Bekas</span>
-        </div>
-      </div>
-      <div className="border-t pt-4">
-        <Button
-          variant="success"
-          size="sm"
-          className="w-full"
-          onClick={onReset}
-        >
-          Reset Filter
-        </Button>
       </div>
     </aside>
   );

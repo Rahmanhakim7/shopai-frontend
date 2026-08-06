@@ -36,7 +36,7 @@ export default function BuyerNavbar() {
   const fetchCounts = async () => {
     try {
       const wishlistResponse = await api.get("/wishlist/");
-      setWishlistCount(wishlistResponse.data.length);
+      setWishlistCount(wishlistResponse.data.count);
       const notificationResponse = await getNotifications();
       const cartResponse = await api.get<CartResponse>("/cart/");
       const totalCart = cartResponse.data.seller_groups.reduce(

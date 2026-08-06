@@ -36,7 +36,19 @@ export type Product = {
   status: ProductStatus;
   image: string;
   seller_name: string;
+  seller: number;
   condition: ProductCondition;
   average_rating: string;
   review_count: string;
+  wishlist_count: number;
+  is_wishlisted: boolean;
+  created_at: string;
 };
+
+export interface Review {
+  id: number;
+  buyer_username: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+}

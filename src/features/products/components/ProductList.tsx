@@ -1,22 +1,16 @@
 import ProductCardGrid from "@/components/product/ProductCardGrid";
 import ProductCardList from "@/components/product/ProductCardList";
-import type { ProductItem } from "@/types/product";
+import type { Product } from "@/features/products/types/product";
 
 export type ProductViewMode = "grid" | "list";
 
 type ProductListProps = {
-  products: ProductItem[];
+  products: Product[];
   viewMode: ProductViewMode;
-  wishlistSet: Set<number>;
-  refreshWishlist: () => Promise<void>;
+  onToggleWishlist: (productId: number) => void;
 };
 
-export default function ProductList({
-  products,
-  viewMode,
-  wishlistSet,
-  refreshWishlist,
-}: ProductListProps) {
+export default function ProductList({ products, viewMode, onToggleWishlist }: ProductListProps) {
   return (
     <div
       className={
@@ -30,15 +24,13 @@ export default function ProductList({
           <ProductCardGrid
             key={product.id}
             product={product}
-            wishlistSet={wishlistSet}
-            refreshWishlist={refreshWishlist}
+            onToggleWishlist={onToggleWishlist}
           />
         ) : (
           <ProductCardList
             key={product.id}
             product={product}
-            wishlistSet={wishlistSet}
-            refreshWishlist={refreshWishlist}
+            onToggleWishlist={onToggleWishlist}
           />
         ),
       )}
