@@ -6,7 +6,7 @@ import { ChevronDown, User, Settings, LogOut } from "lucide-react";
 import { getProfile } from "@/features/auth/profile";
 import { UserProfile } from "@/types/auth";
 import Image from "next/image";
-import EditProfileModal from "@/components/auth/EditProfileModal";
+import EditProfileModal from "@/components/auth/profile/EditProfileModal";
 
 export default function ProfileDropdown() {
   const [openEditProfile, setOpenEditProfile] = useState(false);
