@@ -2,6 +2,7 @@ import {
   LayoutDashboard,
   ShoppingBag,
   Package,
+  Users
 } from "lucide-react";
 
 export const sellerMenus = [
@@ -26,24 +27,11 @@ export const adminMenus = [
   {
     name: "Dashboard",
     href: "/admin/dashboard",
+    icon: LayoutDashboard
   },
   {
     name: "Users",
     href: "/admin/users",
-  },
-  {
-    name: "categories",
-    href: "/admin/categories",
-  },
-];
-
-export const buyerMenus = [
-  {
-    name: "Dashboard",
-    href: "/dashboard",
-  },
-  {
-    name: "Orders",
-    href: "/orders",
+    icon: Users
   },
 ];

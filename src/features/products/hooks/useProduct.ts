@@ -26,6 +26,7 @@ export function useProduct() {
         ordering,
         stock_filter: stockFilter,
         condition,
+        page_size: 4,
       });
       setProducts(data.results);
       setTotalCount(data.count);

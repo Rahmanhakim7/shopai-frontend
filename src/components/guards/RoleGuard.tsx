@@ -2,11 +2,14 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+
+type Role = "seller" | "buyer" | "admin";
+
 type Props = {
   children: React.ReactNode;
-  role: "seller" | "buyer" | "admin";
+  role: Role;
 };
 
 export default function RoleGuard({ children, role }: Props) {
@@ -24,17 +27,21 @@ export default function RoleGuard({ children, role }: Props) {
         case "seller":
           router.replace("/seller/dashboard");
           break;
+
         case "buyer":
           router.replace("/products");
           break;
+
         case "admin":
           router.replace("/admin/dashboard");
           break;
+
         default:
-          router.replace("/");
+          router.replace("/login");
       }
     }
   }, [loading, user, role, router]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -42,11 +49,14 @@ export default function RoleGuard({ children, role }: Props) {
       </div>
     );
   }
+
   if (!user) {
     return null;
   }
+
   if (user.role !== role) {
     return null;
   }
+
   return <>{children}</>;
 }

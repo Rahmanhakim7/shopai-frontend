@@ -52,8 +52,8 @@ export default function LoginForm() {
         router.push("/");
       } else if (response.user.role === "seller") {
         router.push("/seller/dashboard");
-      } else {
-        router.push("/admin");
+      } else if (response.user.role === "admin") {
+        router.push("/admin/dashboard");
       }
     } catch (err) {
       console.error(err);

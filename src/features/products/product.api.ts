@@ -74,6 +74,9 @@ export const getProducts = async (params: ProductQueryParams) => {
   if (params.condition) {
     query.set("condition", params.condition);
   }
+  if (params.page_size) {
+    query.set("page_size", String(params.page_size));
+  }
   const response = await api.get(`/products?${query.toString()}`);
   return response.data.data;
 };

@@ -21,6 +21,7 @@ export interface WishlistItem {
 
 export interface ProductQueryParams {
   page?: number;
+  page_size: number;
   search?: string;
   ordering?: string;
   stock_filter?: StockFilter;
