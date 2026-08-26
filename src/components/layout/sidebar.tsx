@@ -54,9 +54,9 @@ export default function Sidebar({ menus, title }: SidebarProps) {
         })}
       </nav>
       <div className="mt-auto rounded-2xl bg-gradient-to-r from-green-600 to-emerald-500 p-4 text-white shadow-lg">
-        <p className="font-semibold">ShopAI Seller</p>
+        <p className="font-semibold"> ShopAI </p>
         <p className="mt-1 text-xs text-green-100">
-          Grow your business with confidence 🚀
+          Grow your business with confidence
         </p>
       </div>
     </aside>

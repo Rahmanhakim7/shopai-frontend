@@ -10,15 +10,20 @@ export interface OrderItem {
   review_rating: number | null;
 }
 
-export interface Order {
+export interface SellerOrder {
   id: number;
-  buyer_name: string;
   seller_name: string;
-  payment_status: string;
   status: string;
   subtotal: number;
-  created_at: string;
   items: OrderItem[];
+}
+
+export interface Order {
+  id: number;
+  total_amount: number;
+  payment_status: string;
+  created_at: string;
+  seller_orders: SellerOrder[];
 }
 
 export interface PaginatedResponse<T> {
@@ -35,4 +40,4 @@ export interface CheckoutItem {
   price: number;
   image: string | null;
   seller_name: string;
-};
+}
