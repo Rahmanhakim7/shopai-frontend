@@ -1,9 +1,9 @@
 import api from "@/lib/api";
-import type { PaginatedResponse, Order } from "./order.types";
+import type { PaginatedResponse, SellerOrderList } from "./order.types";
 
 export const getSellerOrders = async (
   page = 1,
-): Promise<PaginatedResponse<Order>> => {
+): Promise<PaginatedResponse<SellerOrderList>> => {
   const res = await api.get(`/seller/orders/?page=${page}`);
   return res.data;
 };

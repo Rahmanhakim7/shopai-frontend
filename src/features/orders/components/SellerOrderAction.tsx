@@ -1,9 +1,7 @@
-// SellerOrderActions.tsx
-
-import { Order } from "../order.types";
+import { SellerOrderDetail } from "../order.types";
 
 type Props = {
-  order: Order;
+  order: SellerOrderDetail;
   updating: boolean;
   onProcess: () => void;
   onShip: () => void;

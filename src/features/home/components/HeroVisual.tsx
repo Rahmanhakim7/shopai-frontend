@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useMotionValue, useSpring } from "motion/react";
+import { motion, type Variants,  useMotionValue, useSpring } from "motion/react";
 import { CheckCircle2, Plus, Sparkles } from "lucide-react";
 import { useEffect } from "react";
 
-const imageVariants = {
+const imageVariants: Variants = {
   hidden: {
     opacity: 0,
     scale: 0.9,
@@ -22,7 +22,7 @@ const imageVariants = {
   },
 };
 
-const floatingImageVariants = {
+const floatingImageVariants: Variants = {
   hidden: {
     opacity: 0,
     y: 60,
@@ -39,7 +39,7 @@ const floatingImageVariants = {
   },
 };
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: {
     opacity: 0,
     y: 20,

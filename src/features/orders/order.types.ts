@@ -18,6 +18,28 @@ export interface SellerOrder {
   items: OrderItem[];
 }
 
+export interface SellerOrderDetail {
+  id: number;
+  buyer_name: string;
+  seller_name: string;
+  status: string;
+  subtotal: number;
+  payment_status: string;
+  created_at: string;
+  items: OrderItem[];
+}
+
+export interface SellerOrderList {
+  id: number;
+  buyer_name: string;
+  seller_name: string;
+  status: string;
+  subtotal: number;
+  payment_status: string;
+  created_at: string;
+  items: OrderItem[];
+}
+
 export interface Order {
   id: number;
   total_amount: number;

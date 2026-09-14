@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "motion/react";
+import { motion, type Variants } from "motion/react";
 import { ArrowRight, ShieldCheck, ShoppingBag, Users } from "lucide-react";
 
 const stats = [
@@ -32,7 +32,7 @@ const textContainer = {
   },
 };
 
-const textItem = {
+const textItem: Variants ={
   hidden: {
     opacity: 0,
     y: 35,

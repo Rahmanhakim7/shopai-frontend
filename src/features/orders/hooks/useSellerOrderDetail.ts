@@ -4,10 +4,10 @@ import {
   processSellerOrder,
   shipSellerOrder,
 } from "@/features/orders/order.api";
-import { Order } from "../order.types";
+import { SellerOrderDetail } from "../order.types";
 
 export function useSellerOrderDetail(orderId: number, enabled: boolean = true) {
-  const [order, setOrder] = useState<Order | null>(null);
+  const [order, setOrder] = useState<SellerOrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
 

@@ -1,9 +1,9 @@
-import { Order } from "../order.types";
+import { SellerOrderDetail } from "../order.types";
 import PaymentStatusBadge from "./PaymentStatusBadge";
 import SellerStatusBadge from "./SellerStatusBadge";
 
 type Props = {
-  order: Order;
+  order: SellerOrderDetail;
 };
 
 export default function OrderInfo({ order }: Props) {

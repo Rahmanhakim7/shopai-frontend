@@ -177,7 +177,7 @@ function ProductCard({ product, index }: ProductCardProps) {
               />
 
               <span className="text-[10px] font-semibold text-zinc-600">
-                {product.average_rating.toFixed(1)}
+                {Number(product.average_rating).toFixed(1)}
               </span>
             </div>
 

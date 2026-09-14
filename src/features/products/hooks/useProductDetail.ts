@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Product } from "@/types/product";
-import { Review } from "@/features/products/types/product";
+import { Product, Review } from "../types/product";
 import { getProductDetail, getProductReviews } from "../product.api";
 import { PRODUCT_REVIEW_PAGE_SIZE } from "../constants/paginations";
 

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import SellerStatusBadge from "./SellerStatusBadge";
-import type { Order } from "../order.types";
+import { SellerOrderDetail } from "../order.types";
 import { formatCurrency, formatDate } from "../order.utils";
 
 type SellerOrderTableProps = {
-  orders: Order[];
+  orders: SellerOrderDetail[];
 };
 
 export default function SellerOrderTable({ orders }: SellerOrderTableProps) {
