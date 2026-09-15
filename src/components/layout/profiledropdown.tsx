@@ -7,6 +7,7 @@ import { getProfile } from "@/features/auth/profile";
 import { UserProfile } from "@/types/auth";
 import Image from "next/image";
 import EditProfileModal from "@/components/auth/profile/EditProfileModal";
+import { getImageUrl } from "@/utils/image";
 
 export default function ProfileDropdown() {
   const [openEditProfile, setOpenEditProfile] = useState(false);
@@ -14,9 +15,7 @@ export default function ProfileDropdown() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const imageUrl = user?.profile_image
-    ? `${process.env.NEXT_PUBLIC_API_URL}${user.profile_image}`
-    : null;
+  const imageUrl = user?.profile_image ? getImageUrl(user.profile_image) : null;
 
   const fetchProfile = async () => {
     try {
