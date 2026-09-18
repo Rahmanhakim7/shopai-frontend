@@ -9,7 +9,9 @@ export const getImageUrl = (image?: string | null): string => {
     return image.replace("http://", "https://");
   }
 
-  return image.startsWith("http")
-    ? image
-    : `${API_URL}${image}`;
+  if (image.startsWith("image/upload/")) {
+    return `https://res.cloudinary.com/kxaypleu/${image}`;
+  }
+
+  return image.startsWith("http") ? image : `${API_URL}${image}`;
 };
