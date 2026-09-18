@@ -18,19 +18,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const savedToken = localStorage.getItem("token");
         const savedUser = localStorage.getItem("user");
-
-        // Tidak ada token = guest
         if (!savedToken) {
           setToken(null);
           setUser(null);
-
-          // Bersihkan user yang mungkin masih tertinggal
           localStorage.removeItem("user");
 
           return;
         }
 
-        // Token ada tetapi data user tidak ada
         if (!savedUser) {
           setToken(savedToken);
           setUser(null);
