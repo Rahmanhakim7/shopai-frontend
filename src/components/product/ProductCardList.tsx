@@ -7,7 +7,7 @@ import Button from "@/components/ui/Button";
 import api from "@/lib/api";
 import StockBadge from "@/features/products/components/ProductStockBadge";
 import { Heart } from "lucide-react";
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { getImageUrl } from "@/utils/image";
 
 type Props = {
   product: Product;
@@ -16,13 +16,7 @@ type Props = {
 
 export default function ProductCardList({ product, onToggleWishlist }: Props) {
   const router = useRouter();
-  const imageUrl =
-    product.image && product.image.startsWith("http")
-      ? product.image
-      : product.image
-        ? `${API_URL}${product.image}`
-        : null;
-
+  const imageUrl = getImageUrl(product.image);
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
